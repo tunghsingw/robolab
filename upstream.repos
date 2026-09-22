@@ -1,0 +1,27 @@
+# 上游仓库清单 —— vcstool / vcs2l 格式
+#
+# 拉取(在工作区根目录执行):
+#     vcs import src < upstream.repos
+# 查看三个仓库的状态:
+#     vcs status src
+# 升级某个上游:改下面的 version 为新 commit,再 vcs import src < upstream.repos
+#
+# version 写死 commit 而不是分支,是为了三处环境(Windows / WSL / 讨论沙箱)拿到的代码完全一致,
+# 也保证 patches/ 里的补丁一定打得上。
+# 装 vcs2l:  pip install vcs2l   (vcstool 的继任者,原作者已停更;命令名仍是 vcs)
+
+repositories:
+  microduck:
+    type: git
+    url: https://github.com/pollen-robotics/microduck.git
+    version: e9cca6272f633dd9054dd0e021f356fe086e5be1
+
+  microduck_rl:
+    type: git
+    url: https://github.com/pollen-robotics/microduck_rl.git
+    version: 3412ae50e5e49baf8c638c80734deb140e30101c
+
+  mjlab:
+    type: git
+    url: https://github.com/mujocolab/mjlab.git
+    version: 8ee51fbcf806a7419189f706d9e394cbeb7790fa

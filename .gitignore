@@ -1,0 +1,30 @@
+# 上游仓库:不进本仓库。用 `vcs import src < upstream.repos` 拉取,再按 patches/README.md 打补丁
+/src/
+
+# 另一台机器的镜像(只在讨论沙箱里存在)
+/wsl/
+
+# 训练中间产物:checkpoint 巨大且可再生,不进仓库
+*.pt
+logs/
+wandb/
+
+# 控制台日志:大且机器生成。要长期保留的结论摘进 experiments/
+*.log
+
+# 环境
+.venv/
+__pycache__/
+*.pyc
+
+# 官方策略:能从 Hugging Face 重新下载,不进仓库
+/policies/alpha_*.onnx
+/policies/ball_kick_*.onnx
+/policies/roller*.onnx
+/policies/roulade.onnx
+/policies/manifest.json
+/policies/README.md
+/policies/.cache/
+
+# 注:自己训练的成果(*_velocity.onnx / my_*.onnx / untrained_*.onnx)不在上面任何一条里,
+# 默认就会被 git 跟踪 —— 单个约 800KB,丢了要重训几小时,值得进仓库。

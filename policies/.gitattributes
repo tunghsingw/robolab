@@ -1,0 +1,10 @@
+# 本仓库不用 Git LFS。
+# 自训 onnx 单个约 800KB,普通 git blob 完全够用;走 LFS 反而要求每个 clone 方都装 git-lfs,
+# 还占 GitHub 的 LFS 配额(免费额度 1GB 存储 / 1GB 月流量)。
+#
+# ⚠️ 从 Hugging Face 下载官方策略时,会带来 HF 自己的 .gitattributes(声明 *.onnx 走 LFS)并覆盖本文件。
+# 本文件已纳入版本管理,所以被覆盖时 `git status` 会显示它被修改 —— 看到了就执行:
+#     git checkout policies/.gitattributes
+# 否则自训 onnx 会被静默存成 LFS 指针,clone 下来是坏的。
+
+*.onnx -filter -diff -merge text=auto
