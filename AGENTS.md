@@ -12,7 +12,7 @@
 | **Windows 11 原生**(PowerShell) | `D:\robot\microduck\` | **根目录** | CPU 推理:`run_infer*.ps1`,弹原生 MuJoCo 窗口 |
 | **WSL2 Ubuntu 24.04**(用户 `robot`) | `~/robot/microduck/` | **`wsl/`** | GPU 训练、`play` 回放、导出 ONNX、TensorBoard |
 
-讨论沙箱(一台独立 Ubuntu 上的 `.../robot/microduck/`,agent 的工作目录)本身**不跑任何真实负载**,
+讨论沙箱(一台独立 Ubuntu 上的工作目录,agent 就在那儿)本身**不跑任何真实负载**,
 它只是这两份镜像的编辑处:读代码、改脚本、写文档。
 
 路径换算,前缀一换即可:
