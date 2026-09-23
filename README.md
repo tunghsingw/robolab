@@ -90,7 +90,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 | 环境 | 负责什么 | 仓库位置 | 怎么进 |
 |---|---|---|---|
 | **Windows 11 原生**(PowerShell) | 推理:`run_infer*.ps1`,弹原生 MuJoCo 窗口看鸭子;**GPU 训练也能跑**(已实测) | `D:\robot\robolab\` | 开 PowerShell |
-| **WSL2 Ubuntu 24.04** | GPU 训练、`play` 回放、导出 ONNX、TensorBoard;以后的 duck-sim 全栈模拟只能在这 | `~/robot/microduck/src/microduck_rl`(WSL 自己的文件系统,**不是** `/mnt/d`) | PowerShell 里 `wsl -d Ubuntu` |
+| **WSL2 Ubuntu 24.04** | 训练主力、`play` 回放、导出 ONNX、TensorBoard;以后的 duck-sim 全栈模拟只能在这 | `~/robolab/`(WSL 自己的文件系统,**不是** `/mnt/d`) | PowerShell 里 `wsl -d Ubuntu` |
 
 **两边训练速度实测基本相同**(同机同卡、torch 2.9.1+cu128、warp 1.12.0、seed 42、1024 envs × 200 迭代):WSL **7:28**(2.24 s/iter)vs Windows **7:56**(2.38 s/iter),差 6%,在散热波动范围内。所以选哪边不看速度,看别的:
 
@@ -106,7 +106,9 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 要点:
 
 - 发行版名就叫 `Ubuntu`(rootfs 导入在 `D:/wsl/Ubuntu`),默认用户 `robot`,免密 sudo
-- 两边是**两份独立的仓库副本**,改了一边另一边不会变;跨环境传文件走 `/mnt/d/...`(例如把导出的 ONNX 拷回 Windows 的 `policies\`)
+- 两边(加上讨论沙箱一共三处)都是 **`github.com/tunghsingw/robolab` 的 clone**,目录结构完全相同。
+  文档、脚本、自训 ONNX 走 `git pull` 同步;上游代码各自 `vcs import` 拉;`.venv` 和 `logs/` 各管各的。
+  急着传单个文件也可以走 `/mnt/d/robot/robolab/...`(WSL 里直接访问 D 盘)
 - 仓库放在 WSL 内部而不是 `/mnt/d` 是故意的:跨文件系统 I/O 慢好几倍
 - WSL 里没有显示器,原生 MuJoCo 窗口开不了 → 在 WSL 中一律用网页查看器(`play` 的 viser、TensorBoard),Windows 浏览器开 `localhost:<端口>`(已切 mirrored 网络模式,端口互通)
 - GPU 两边都直接可用(RTX 3060 Laptop):WSL 和 Windows 的 venv 里都是 torch `2.9.1+cu128` + warp 1.12.0,都认得到 sm_86
@@ -148,7 +150,7 @@ Windows 侧(推理):
 
 WSL 侧(训练):
 
-- WSL2 **Ubuntu 24.04 已装好**(rootfs 导入到 `D:/wsl/Ubuntu`,搭建过程见第二步),`~/robot/microduck/src/microduck_rl` 下 `uv sync` 完成
+- WSL2 **Ubuntu 24.04 已装好**(rootfs 导入到 `D:/wsl/Ubuntu`,搭建过程见第二步),`~/robolab/src/microduck_rl` 下 `uv sync` 完成
 - torch `2.9.1+cu128`,CUDA 可用;warp 1.12.0 认到 RTX 3060(sm_86)
 - 网络已切 mirrored 模式,Windows 系统代理(127.0.0.1:7890)在 WSL 内可用(详见「WSL 使用本机系统代理」)
 
@@ -219,7 +221,7 @@ wsl -d Ubuntu                     # 进入 Ubuntu(默认用户 robot,免密 sudo
 ```
 
 ```bash
-cd ~/robot/microduck/src/microduck_rl
+cd ~/robolab/src/microduck_rl
 uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024   # 训练(6GB 显存从 1024 起步,别开 4096)
 uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 64 --agent.max-iterations 5   # 冒烟测试(仓库铁律:大 run 前必跑)
 ```
@@ -240,7 +242,7 @@ cd D:\robot\robolab\src\microduck_rl
 
 #### 已有的训练履历(阶段 1 的素材)
 
-WSL `~/robot/microduck/src/microduck_rl/logs/rsl_rl/velocity/` 下:
+WSL `~/robolab/src/microduck_rl/logs/rsl_rl/velocity/` 下:
 
 | run 目录 | 存档 | 是什么 |
 |---|---|---|
@@ -259,7 +261,7 @@ Windows 侧 `logs\rsl_rl\velocity\` 下另有 3 个 run(2026-09-18),最多到 `m
 每次训练自动往 `logs/rsl_rl/velocity/<run目录>/` 写 TensorBoard 事件文件,纯本地、不依赖外网。想看训练曲线,另开一个 WSL 终端:
 
 ```bash
-cd ~/robot/microduck/src/microduck_rl
+cd ~/robolab/src/microduck_rl
 uv run tensorboard --logdir logs/rsl_rl
 ```
 
@@ -284,7 +286,7 @@ SCALARS 页按前缀分组,训练时重点盯三条(AGENTS.md 的读法):
 继续训练(复制即用,自动找最新 run 的最新存档):
 
 ```bash
-cd ~/robot/microduck/src/microduck_rl
+cd ~/robolab/src/microduck_rl
 RUN=$(ls -td logs/rsl_rl/velocity/*/ | head -1)
 CKPT=$(basename $(ls $RUN/model_*.pt | sort -V | tail -1))
 echo "从 $RUN 的 $CKPT 继续"
@@ -311,7 +313,7 @@ uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 \
 复制即用(自动找最新 run 的最新 checkpoint):
 
 ```bash
-cd ~/robot/microduck/src/microduck_rl
+cd ~/robolab/src/microduck_rl
 RUN=$(ls -td logs/rsl_rl/velocity/*/ | head -1)
 CKPT=$(ls $RUN/model_*.pt | sort -V | tail -1)
 echo "回放: $CKPT"
@@ -341,7 +343,7 @@ WANDB_MODE=offline uv run play Mjlab-Velocity-Flat-MicroDuck \
 
 ```bash
 # ① 导出 ONNX(必须用这个脚本——它把观测归一化参数烤进文件,漏了则策略部署即废,AGENTS.md 铁律)
-cd ~/robot/microduck/src/microduck_rl
+cd ~/robolab/src/microduck_rl
 RUN=$(ls -td logs/rsl_rl/velocity/*/ | head -1)
 CKPT=$(ls $RUN/model_*.pt | sort -V | tail -1)
 echo "导出: $CKPT"
@@ -381,7 +383,7 @@ cp my_walking.onnx /mnt/d/robot/robolab/policies/
 
 1. 商店版 Ubuntu 26.04 注册失败(`0x80071772`,WSL 2.2.4 太旧且 `wsl --update` 被网络/权限挡住)→ 改用 **rootfs 导入**:从 USTC 镜像下载 Ubuntu 24.04 WSL rootfs 到 `D:/wsl/`,`wsl --import Ubuntu D:/wsl/Ubuntu <rootfs.tar.gz> --version 2`
 2. 建默认用户 robot(`/etc/wsl.conf` 设 `default=robot` + `systemd=true`),apt 换 USTC 源
-3. 仓库复制到 **WSL 自己的文件系统** `~/robot/microduck/src/microduck_rl`(不能放 `/mnt/d`,跨文件系统 I/O 慢好几倍;排除 `.venv`/`__pycache__`/`logs`)
+3. 在 **WSL 自己的文件系统**里 `git clone` 本仓库到 `~/robolab`,再 `vcs import src < upstream.repos` 拉上游(不能放 `/mnt/d`,跨文件系统 I/O 慢好几倍)
 4. GitHub 在 WSL 里直连不通(bam 是 git 依赖)→ git 全局 URL 重写走代理:`git config --global url."https://gh-proxy.com/https://github.com/".insteadOf "https://github.com/"`(uv 调系统 git,所以对 uv 生效且不用改 uv.lock)
 5. `UV_HTTP_TIMEOUT=600 uv sync` —— Linux x86_64 上 PyPI 的 torch 轮子自带 CUDA(nvidia-* 依赖),不用像 Windows 那样换索引
 
@@ -425,7 +427,7 @@ dnsTunneling=true
 - [x] clone 两仓库;`uv sync` 完成(但 torch 为 CPU 版);了解项目结构与训练/推理区别
 - [x] 跑通 CPU 推理:官方策略已下载到 `policies\`,infer_policy.py 打了 Windows 键盘补丁,`run_infer.ps1` 一键启动
 - [x] 根目录由"具身智能"改名为 robot:已更新 README、run_infer.ps1、setup*.ps1 里的路径;`.venv` 因 uv 入口 exe 内嵌旧绝对路径而失效,用 `uv sync --reinstall` 重建后恢复
-- [x] 训练环境就绪:WSL2 Ubuntu 24.04(rootfs 导入到 `D:/wsl/Ubuntu`),仓库在 WSL 内 `~/robot/microduck/src/microduck_rl`,torch 2.9.1+cu128 CUDA 可用
+- [x] 训练环境就绪:WSL2 Ubuntu 24.04(rootfs 导入到 `D:/wsl/Ubuntu`),仓库在 WSL 内 `~/robolab/src/microduck_rl`,torch 2.9.1+cu128 CUDA 可用
 - [x] 冒烟测试通过(64 envs × 5 iters,惩罚项全 ≤ 0,nan_state=0,1.33s/iter)
 - [x] WSL 网络切换 mirrored 模式(`.wslconfig`),本机系统代理(127.0.0.1:7890)在 WSL 内可用,GitHub/HF 可直连;gh-proxy/USTC/hf-mirror 作为代理离线时的兜底
 - [x] 讨论环境迁到独立 Ubuntu 沙箱(AI 助手不再跑在 Windows 侧);三处环境分工与 XFTP 同步约定写入根目录 `AGENTS.md`

@@ -1,8 +1,6 @@
 # 上游仓库:不进本仓库。用 `vcs import src < upstream.repos` 拉取,再按 patches/README.md 打补丁
 /src/
 
-# 另一台机器的镜像(只在讨论沙箱里存在)
-/wsl/
 
 # 训练中间产物:checkpoint 巨大且可再生,不进仓库
 *.pt

@@ -3,29 +3,21 @@
 > 这份文件只管一件事:**哪台机器干什么、文件怎么在它们之间流动**。
 > 训练/奖励/sim2real 的经验看 `src/microduck_rl/AGENTS.md`;学习笔记和日常命令看根目录 `README.md`。
 
-## 一、两个运行环境,沙箱里两份镜像
+## 一、三处 clone,各管一摊
 
-开发机上有两个环境,沙箱里各存一份镜像:
+**三处都是 `github.com/tunghsingw/robolab` 的 clone,目录结构完全相同**,只是工作区根不同:
 
-| 环境 | 真机路径 | 沙箱里对应 | 负责什么 |
-|---|---|---|---|
-| **Windows 11 原生**(PowerShell) | `D:\robot\robolab\` | **根目录** | CPU 推理:`run_infer*.ps1`,弹原生 MuJoCo 窗口 |
-| **WSL2 Ubuntu 24.04**(用户 `robot`) | `~/robot/microduck/` | **`wsl/`** | GPU 训练、`play` 回放、导出 ONNX、TensorBoard |
+| 环境 | 工作区根 | 负责什么 |
+|---|---|---|
+| **讨论沙箱**(agent 在这) | agent 的工作目录 | 读代码、改脚本、写文档。**不跑任何真实负载** |
+| **Windows 11 原生**(PowerShell) | `D:\robot\robolab\` | 推理:`run_infer*.ps1`,原生 MuJoCo 窗口。也能训练(实测比 WSL 慢 6%) |
+| **WSL2 Ubuntu 24.04**(用户 `robot`) | `~/robolab/` | 训练主力、`play` 回放、导出 ONNX、TensorBoard;以后的 duck-sim 只能在这 |
 
-讨论沙箱(一台独立 Ubuntu 上的工作目录,agent 就在那儿)本身**不跑任何真实负载**,
-它只是这两份镜像的编辑处:读代码、改脚本、写文档。
+**仓库内的相对路径三处一模一样**,所以 agent 说 `src/microduck_rl/scripts/export.py`,
+三处都能直接对号入座,不需要换算——只有写成命令给用户时才要补上对应的根。
 
-路径换算,前缀一换即可:
-
-| 沙箱 | 真机 |
-|---|---|
-| `<X>` | `D:\robot\robolab\<X>` |
-| `wsl/<X>` | `~/robot/microduck/<X>` |
-
-例:沙箱 `wsl/src/microduck_rl/scripts/export.py` = WSL 的 `~/robot/microduck/src/microduck_rl/scripts/export.py`。
-
-Windows ↔ WSL 之间可直接走 `/mnt/d/robot/robolab/...`(WSL 里访问 D 盘),不经过 XFTP。
-WSL 侧仓库必须放在 WSL 自己的文件系统(`~/robot/...`),不能放 `/mnt/d`——跨文件系统 I/O 慢好几倍。
+Windows ↔ WSL 之间可直接走 `/mnt/d/robot/robolab/...`(WSL 里访问 D 盘)。
+⚠️ **WSL 侧仓库必须放在 WSL 自己的文件系统(`~/robolab`),不能放 `/mnt/d`**——跨文件系统 I/O 慢好几倍,训练会被拖垮。
 
 ### 目录结构
 
@@ -42,13 +34,14 @@ WSL 侧仓库必须放在 WSL 自己的文件系统(`~/robot/...`),不能放 `/m
 ├── patches/                          对上游的适配性修改(唯一记录)
 ├── policies/                         ONNX 策略
 ├── experiments/                      实验记录(阶段 2 起)
-├── src/                          ←   **第三方,整个 git 忽略**
-│   ├── microduck/                    上游:Rust 机载运行时 + duck-sim
-│   ├── microduck_rl/                 上游:训练(Windows 那份)
-│   └── mjlab/                        上游:参考源码
-└── wsl/                          ←   = WSL ~/robot/microduck/(只存在于沙箱)
-    └── src/microduck_rl/             训练(WSL 那份,真正跑训练的)
+└── src/                          ←   **第三方,整个 git 忽略**,由 upstream.repos 拉取
+    ├── microduck/                    上游:Rust 机载运行时 + duck-sim
+    ├── microduck_rl/                 上游:训练(logs/ 和 .venv 也在这下面)
+    └── mjlab/                        上游:参考源码
 ```
+
+三处的 `src/` 内容由 `upstream.repos` + `patches/` 唯一确定,**所以不需要在沙箱里再存一份别处的镜像**。
+唯一的合法差异:补丁 02(win32 的 cu128 索引)只在 Windows 打,Linux 侧不打。
 
 ### 上游仓库怎么管
 
@@ -65,23 +58,23 @@ WSL 侧仓库必须放在 WSL 自己的文件系统(`~/robot/...`),不能放 `/m
 为什么不用 subtree:三个仓库几十 MB 且含大量 CAD 资产,并进学习笔记仓库不划算;上游都是公开活跃仓库,随时能拉。
 **以后阶段 3 建自己的任务包时,mjlab 会真正变成依赖,那时改用 `[tool.uv.sources]` 才是正解——路线会演进。**
 
-**不传进沙箱**:`.venv/`(平台相关,各自 `uv sync` 生成)、`logs/`(训练输出,上 G)。
-**`.git/` 要传**——它是判断"哪些文件相对上游被改过"的唯一依据,值这几十 MB。
+`src/` 下每个上游 clone 的 `.git/` 要保留——它是判断"哪些文件相对上游被改过"的唯一依据。
 
 ## 二、给 AI agent 的硬性约定
 
 1. **沙箱里的 Bash 不是用户的机器。** 在沙箱里跑不了 `run_infer.ps1`、调不到 `wsl.exe`、看不到 `logs/` 和 GPU。
    需要真机验证的事,**给用户可直接复制的命令并标明在哪一侧敲**,不要声称自己执行过。
-2. **命令按目标环境写路径**:PowerShell 用 `D:\robot\robolab\...`;WSL 用 `~/robot/microduck/src/microduck_rl`。
+2. **命令按目标环境写路径**:PowerShell 用 `D:\robot\robolab\...`;WSL 用 `~/robolab/src/microduck_rl`。
    **绝不把 `/srv/workspace/...` 写进交付物**(脚本、文档、README)。
-3. **沙箱两份镜像就是真机现状**(含本地补丁)。要知道相对上游改了什么,一条命令:
-   `git -C src/microduck_rl status`(Windows 侧)、`git -C wsl/src/microduck_rl status`(WSL 侧)。
+3. **沙箱的 `src/` 就是三处应有的上游状态**(由 `upstream.repos` + `patches/` 唯一确定)。
+   要知道相对上游改了什么:`git -C src/microduck_rl status`。
+   真机上如果出现这之外的改动,那是临时实验,**让用户把现状发过来再看,不要假设**。
 4. ⚠️ **换行不统一**:三个 clone 里 git 跟踪的文件是 **CRLF**(Windows 侧 `core.autocrlf` 检出的),
    根目录自写的 `.ps1`/`.md` 是 LF,训练日志是 CRLF。沙箱的三个 clone 已设 `core.autocrlf=input`,
    git 不再把换行差异当改动;但**手动比对两份文件时必须先 `tr -d '\r'`**,否则整个文件都显示不同。
-5. **改代码优先在沙箱改**,改完告诉用户要同步哪几个文件过去;不要让用户在两边各改一遍。
-   改的是哪台机器的文件,就去对应目录改:Windows 的在根目录,WSL 的在 `wsl/` 下。
-6. 会话收尾时,若这轮改了需要同步的文件,**列一份"待 XFTP 同步清单"**(文件 → 目标环境)。
+5. **改文档和脚本一律在沙箱改,改完 commit + push**,用户在真机 `git pull`。
+   不要让用户在三处各改一遍,也不要再列 XFTP 清单——那是建仓库之前的做法。
+6. 会话收尾时,若这轮有提交,**说清楚推了什么、用户该在哪台机器 `git pull`**。
 7. ⚠️ **领域常识不许凭记忆回答**——技术分类、领域现状、谁家用什么方法、缩写全称、论文结论,
    这类问题先查 `REFERENCES.md`,查不到就**联网核实**,核实完把来源加进 `REFERENCES.md`(注明它能回答什么)。
    这条是踩坑立的:README 最初那版"两条技术栈"的分类凭记忆写,三处硬伤,核实后才改对。
@@ -94,45 +87,30 @@ WSL 侧仓库必须放在 WSL 自己的文件系统(`~/robot/...`),不能放 `/m
 
 ## 三、同步约定
 
-**文档、脚本、配置走 git,不要再手工拷。** 工作区本身是 `github.com/tunghsingw/robolab`,
-沙箱和 Windows 都是它的 clone:沙箱改完 `git push`,真机 `git pull` 即可。
+**三处都是同一个仓库的 clone,同步走 git,不要再手工拷贝。**
 
-**XFTP 只剩两个用途**:① 把真机现状(被改过的上游源码、训练日志)拉给 agent 看;
-② WSL 侧接入 git 之前的临时手段。
-
-下面这张表是 XFTP 时代的约定,**凡是 git 已跟踪的文件一律走 git**,表里只有未跟踪的部分还适用。
-方向按"谁是源头"定:
-
-| 内容 | 源头 | 同步到 | 说明 |
-|---|---|---|---|
-| `README.md`、`AGENTS.md`、`GLOSSARY.md`、`REFERENCES.md` | 沙箱 | Windows + WSL | 文档一律在沙箱写,写完推过去 |
-| `upstream.repos`、`.gitignore`、`patches/` | 沙箱 | Windows + WSL | 工作区配置,三处一致 |
-| `experiments/` 实验记录 | 谁做的实验谁先写 | 另外两处 | 阶段 2 起 |
-| 自写脚本 `run_infer*.ps1` 等 | 沙箱 | Windows | 含中文的 `.ps1` 必须存 **UTF-8 带 BOM**(PowerShell 5.1 会把无 BOM 当 ANSI 读,中文乱码) |
-| 对仓库源码的本地补丁(如 `infer_policy.py`) | 沙箱 | 打补丁的那一侧 | 先把真机现状拉回沙箱,改完再推回去 |
-| 训练产出 `*.onnx` | WSL | 沙箱(备查) / Windows(`policies\` 供推理) | 单个几百 KB,同步无压力 |
-| 真机现状(被改过的源码、目录清单) | Windows / WSL | 沙箱 | 需要我读真机现状时按需拉 |
-
-**不要同步**:
-
-- `.venv/` —— 平台相关且入口 exe 内嵌绝对路径,三处各自 `uv sync`
-- `logs/` —— 训练输出巨大,只留在 WSL
-- `__pycache__/`、`*.pyc`
-- `.git/` —— **只在"沙箱 → 真机"这个方向上不要推**,两台机器各自的 git 状态别互相覆盖
-
-### 真机 → 沙箱:怎么传
-
-按机器对号入座,同一相对路径直接覆盖:
-
-| 真机 | 传到沙箱 |
+| 内容 | 怎么同步 |
 |---|---|
-| `D:\robot\robolab\<X>` | 根目录 `<X>` |
-| `~/robot/microduck/<X>` | `wsl/<X>` |
+| 文档、脚本、`upstream.repos`、`.gitignore`、`patches/`、自训 ONNX、`experiments/` | **git**。沙箱改完 push,真机 `git pull` |
+| `src/` 下的上游代码 | **各自 `vcs import` + `git apply`**。清单钉死 commit,所以三处必然一致 |
+| `.venv/` | **各自 `uv sync`**。平台相关,且 uv 入口内嵌绝对路径,搬过去必失效 |
+| `logs/`(训练输出) | **不同步**。上 G,留在训练的那台机器上 |
 
-XFTP 里排除 `.venv/`、`logs/`、`__pycache__/`;**`.git/` 要传**(见第一节末)。
+**XFTP 只剩一个用途**:把真机上未纳入 git 的临时东西(训练日志片段、临时改过的文件)拉给 agent 看。
+需要时再拉,不必常备镜像。
 
-Windows 和 WSL 都有 `src/microduck_rl/`,同名文件后传的覆盖先传的,不必分类——
-哪些文件被改过,agent 用 `git -C src/microduck_rl diff` 一看便知。
+谁改谁负责:
+
+- **文档、脚本、配置** —— 一律在沙箱改,agent commit + push,用户 `git pull`。
+- **实验记录** —— 谁做的实验谁写进 `experiments/`,commit + push。
+- **训练产出的 ONNX** —— 在哪台机器导出就在哪台 `git add`,push 之后另外两处 pull 即可。
+- **临时的上游代码改动**(比如改奖励权重做消融) —— 做完 `git checkout` 还原,**不要 commit,也不要存成补丁**;
+  要保留的是结论,写进 `experiments/`。
+
+⚠️ 一个反复踩过的坑:从 Hugging Face 下载官方策略会带来它自己的 `policies/.gitattributes`
+(声明 `*.onnx` 走 Git LFS),覆盖本仓库的同名文件。不还原的话,以后提交的自训 ONNX 会被静默存成
+130 字节的 LFS 指针,clone 下来是坏的且**没有任何报错**。`git status` 显示该文件被改就执行
+`git checkout policies/.gitattributes`。
 
 ## 四、文档分工(这几个 md 谁管什么)
 
