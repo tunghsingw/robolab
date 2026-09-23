@@ -29,6 +29,9 @@
 | MuJoCo 文档 | https://mujoco.readthedocs.io/ | 仿真器原理、MJCF 格式、XML 元素参考 | ✓ |
 | mjlab | https://github.com/mujocolab/mjlab | 训练框架的 API、CLI 参数、任务注册机制 | ✓ |
 | rsl_rl | https://github.com/leggedrobotics/rsl_rl | PPO 实现细节、训练循环、checkpoint 格式 | ✓ |
+| MuJoCo XML 参考 | https://mujoco.readthedocs.io/en/stable/XMLreference.html | MJCF 每个属性的精确定义:armature、frictionloss、condim、contype/conaffinity、freejoint、keyframe | ✓ |
+| onshape-to-robot 文档 | https://onshape-to-robot.readthedocs.io/ | CAD → URDF/MJCF 怎么导出,`config.json` 各字段(ignore、additional_xml、joint_properties、post_import_commands)的含义 | ✓ |
+| BAM 文档 / 代码 | https://bam.readthedocs.io/ · https://github.com/Rhoban/bam | 舵机扩展摩擦模型怎么辨识、有哪些现成舵机模型(XL330 等)、怎么接入 mjlab。**换舵机时照着它搭台架** | ✓ |
 | microduck(上游) | https://github.com/pollen-robotics/microduck | 真机运行时(Rust)、策略怎么加载 | ✓ |
 | microduck_rl(上游) | https://github.com/pollen-robotics/microduck_rl | 训练环境本体 | ✓ |
 
@@ -43,6 +46,7 @@
 | 控制 + 机器学习融合分类(Actuators) | https://www.mdpi.com/2076-0825/15/5/235 | MPC / RL / IL 三者怎么混着用 | ✓ |
 | Atlas + TRI 大行为模型 | https://www.therobotreport.com/boston-dynamics-tri-use-large-behavior-models-train-atlas-humanoid/ | **Atlas 的真实技术栈**:MPC 做底层控制和遥操作底座,上面叠扩散 Transformer 的 LBM | ✓ |
 | 操作模仿学习分类综述 | https://arxiv.org/html/2508.17449v1 | IL 在操作方向的方法谱系;行为克隆占比等数据 | ✓ |
+| BAM 论文:Duclusaud et al., ICRA 2025 | https://arxiv.org/abs/2410.08650 | **为什么 MuJoCo 默认的"库仑 + 粘性"摩擦不够用**;Stribeck / 负载相关摩擦模型;摆锤台架辨识方法 | ✓ |
 
 ## 四、经典奠基论文(⚠️ 凭记忆列出,待核实)
 
