@@ -349,7 +349,7 @@ uv run scripts/export.py Mjlab-Velocity-Flat-MicroDuck \
     --checkpoint-file "$CKPT" --onnx-file my_walking.onnx
 
 # ② 拷到 Windows 的策略目录
-cp my_walking.onnx /mnt/d/robot/microduck/policies/
+cp my_walking.onnx /mnt/d/robot/robolab/policies/
 ```
 
 ③ 编辑 `run_infer.ps1`,把 `--walking` 行换成自己的文件:

@@ -93,4 +93,6 @@
 | mjlab | — | 建在 MuJoCo Warp 上的 RL 训练框架,本项目的直接依赖 | ✓源码 |
 | rsl_rl | Robotic Systems Lab – RL | 苏黎世联邦理工(ETH)机器人系统实验室的 RL 库,提供 PPO 实现。腿足机器人 RL 的常用底座 | ✓ |
 | onshape-to-robot | — | Rhoban 的工具:通过 Onshape API 把 CAD 装配体导出成 URDF / SDF / MJCF。本项目每个 `config_mjcf_*.json` 就是它的配置 | ✓ |
+| vcs / vcstool | version control system tool | ROS 工作区的多仓库管理工具:从一个 `.repos` 清单文件(YAML)一次 clone / 更新多个上游仓库到指定目录,命令形如 `vcs import src < file.repos`。**本项目用它在 `src/` 下按 `upstream.repos` 拉 microduck / microduck_rl / mjlab 三个上游** | ✓ |
+| vcs2l | —(vcstool 的继任 fork) | vcstool 停更(2022 起)后的继任者,命令名仍是 `vcs`,可无缝替换。**本项目 INSTALL.md 装的是它**(`pip install vcs2l`) | ✓ |
 | ONNX | Open Neural Network Exchange | 跨框架跨平台的模型格式。本身是通用 ML 格式,但**"训练→导出 ONNX→机载运行时加载"是这个领域的标准部署路径**,所以收录 | ✓ |

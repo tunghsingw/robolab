@@ -24,7 +24,7 @@
 
 例:沙箱 `wsl/src/microduck_rl/scripts/export.py` = WSL 的 `~/robot/microduck/src/microduck_rl/scripts/export.py`。
 
-Windows ↔ WSL 之间可直接走 `/mnt/d/robot/microduck/...`(WSL 里访问 D 盘),不经过 XFTP。
+Windows ↔ WSL 之间可直接走 `/mnt/d/robot/robolab/...`(WSL 里访问 D 盘),不经过 XFTP。
 WSL 侧仓库必须放在 WSL 自己的文件系统(`~/robot/...`),不能放 `/mnt/d`——跨文件系统 I/O 慢好几倍。
 
 ### 目录结构
