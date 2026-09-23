@@ -9,7 +9,7 @@
 
 | 环境 | 真机路径 | 沙箱里对应 | 负责什么 |
 |---|---|---|---|
-| **Windows 11 原生**(PowerShell) | `D:\robot\microduck\` | **根目录** | CPU 推理:`run_infer*.ps1`,弹原生 MuJoCo 窗口 |
+| **Windows 11 原生**(PowerShell) | `D:\robot\robolab\` | **根目录** | CPU 推理:`run_infer*.ps1`,弹原生 MuJoCo 窗口 |
 | **WSL2 Ubuntu 24.04**(用户 `robot`) | `~/robot/microduck/` | **`wsl/`** | GPU 训练、`play` 回放、导出 ONNX、TensorBoard |
 
 讨论沙箱(一台独立 Ubuntu 上的工作目录,agent 就在那儿)本身**不跑任何真实负载**,
@@ -19,7 +19,7 @@
 
 | 沙箱 | 真机 |
 |---|---|
-| `<X>` | `D:\robot\microduck\<X>` |
+| `<X>` | `D:\robot\robolab\<X>` |
 | `wsl/<X>` | `~/robot/microduck/<X>` |
 
 例:沙箱 `wsl/src/microduck_rl/scripts/export.py` = WSL 的 `~/robot/microduck/src/microduck_rl/scripts/export.py`。
@@ -32,7 +32,7 @@ WSL 侧仓库必须放在 WSL 自己的文件系统(`~/robot/...`),不能放 `/m
 采用 **ROS 工作区惯例**:根目录是工作区,第三方仓库统一进 `src/`,由清单文件钉住版本。
 
 ```
-robot/microduck/              ← 工作区根 = 用户的 git 仓库 = 沙箱根 = Windows D:\robot\microduck\
+<工作区根>/                   ← 用户的 git 仓库(github.com/tunghsingw/robolab)。三处各是它的一份 clone/副本
 ├── README.md                         学习笔记(人读)
 ├── AGENTS.md CLAUDE.md               环境分工与 agent 约定
 ├── GLOSSARY.md REFERENCES.md         名词表 / 外部资料清单(人和 agent 共用)
@@ -72,7 +72,7 @@ robot/microduck/              ← 工作区根 = 用户的 git 仓库 = 沙箱�
 
 1. **沙箱里的 Bash 不是用户的机器。** 在沙箱里跑不了 `run_infer.ps1`、调不到 `wsl.exe`、看不到 `logs/` 和 GPU。
    需要真机验证的事,**给用户可直接复制的命令并标明在哪一侧敲**,不要声称自己执行过。
-2. **命令按目标环境写路径**:PowerShell 用 `D:\robot\microduck\...`;WSL 用 `~/robot/microduck/src/microduck_rl`。
+2. **命令按目标环境写路径**:PowerShell 用 `D:\robot\robolab\...`;WSL 用 `~/robot/microduck/src/microduck_rl`。
    **绝不把 `/srv/workspace/...` 写进交付物**(脚本、文档、README)。
 3. **沙箱两份镜像就是真机现状**(含本地补丁)。要知道相对上游改了什么,一条命令:
    `git -C src/microduck_rl status`(Windows 侧)、`git -C wsl/src/microduck_rl status`(WSL 侧)。
@@ -92,8 +92,15 @@ robot/microduck/              ← 工作区根 = 用户的 git 仓库 = 沙箱�
    给用户的命令里凡有重定向/导出路径,都要**显式指到根目录**
    (例:在 `src/microduck_rl` 下跑训练时写 `... | tee ../../experiments/xxx.log`,不是 `tee xxx.log`)。
 
-## 三、XFTP 同步约定
+## 三、同步约定
 
+**文档、脚本、配置走 git,不要再手工拷。** 工作区本身是 `github.com/tunghsingw/robolab`,
+沙箱和 Windows 都是它的 clone:沙箱改完 `git push`,真机 `git pull` 即可。
+
+**XFTP 只剩两个用途**:① 把真机现状(被改过的上游源码、训练日志)拉给 agent 看;
+② WSL 侧接入 git 之前的临时手段。
+
+下面这张表是 XFTP 时代的约定,**凡是 git 已跟踪的文件一律走 git**,表里只有未跟踪的部分还适用。
 方向按"谁是源头"定:
 
 | 内容 | 源头 | 同步到 | 说明 |
@@ -119,7 +126,7 @@ robot/microduck/              ← 工作区根 = 用户的 git 仓库 = 沙箱�
 
 | 真机 | 传到沙箱 |
 |---|---|
-| `D:\robot\microduck\<X>` | 根目录 `<X>` |
+| `D:\robot\robolab\<X>` | 根目录 `<X>` |
 | `~/robot/microduck/<X>` | `wsl/<X>` |
 
 XFTP 里排除 `.venv/`、`logs/`、`__pycache__/`;**`.git/` 要传**(见第一节末)。

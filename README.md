@@ -87,7 +87,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 
 | 环境 | 负责什么 | 仓库位置 | 怎么进 |
 |---|---|---|---|
-| **Windows 11 原生**(PowerShell) | 推理:`run_infer*.ps1`,弹原生 MuJoCo 窗口看鸭子;**GPU 训练也能跑**(已实测) | `D:\robot\microduck\` | 开 PowerShell |
+| **Windows 11 原生**(PowerShell) | 推理:`run_infer*.ps1`,弹原生 MuJoCo 窗口看鸭子;**GPU 训练也能跑**(已实测) | `D:\robot\robolab\` | 开 PowerShell |
 | **WSL2 Ubuntu 24.04** | GPU 训练、`play` 回放、导出 ONNX、TensorBoard;以后的 duck-sim 全栈模拟只能在这 | `~/robot/microduck/src/microduck_rl`(WSL 自己的文件系统,**不是** `/mnt/d`) | PowerShell 里 `wsl -d Ubuntu` |
 
 **两边训练速度实测基本相同**(同机同卡、torch 2.9.1+cu128、warp 1.12.0、seed 42、1024 envs × 200 迭代):WSL **7:28**(2.24 s/iter)vs Windows **7:56**(2.38 s/iter),差 6%,在散热波动范围内。所以选哪边不看速度,看别的:
@@ -141,7 +141,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 Windows 侧(推理):
 
 - Python 3.12.6;`uv` 装在 `%USERPROFILE%\.local\bin\uv.exe`,**不在 PATH 里**
-- `D:\robot\microduck\src\microduck_rl\.venv` 已通过 `uv sync` 建好(之前 Doubao 的 setup.ps1/setup2.ps1 干的)
+- `D:\robot\robolab\src\microduck_rl\.venv` 已通过 `uv sync` 建好(之前 Doubao 的 setup.ps1/setup2.ps1 干的)
 - torch 已换成 **CUDA 版 `2.9.1+cu128`**:`pyproject.toml` 里给 `sys_platform == 'win32'` 加了 `pytorch-cu128` 索引(不加的话 Windows 上 PyPI 默认给 CPU 轮子 `2.9.1+cpu`,`cuda.is_available()==False`)。日常用法仍是根目录三个 `run_infer*.ps1`(ONNX 推理);torch 换 GPU 版之后,Windows 在技术上也具备跑 `play` 回放的条件(有原生显示器,不用 viser),但没实测过
 
 WSL 侧(训练):
@@ -157,7 +157,7 @@ WSL 侧(训练):
 **日常使用:在 PowerShell 里跑一条命令即可**
 
 ```powershell
-D:\robot\microduck\run_infer.ps1
+D:\robot\robolab\run_infer.ps1
 ```
 
 MuJoCo 窗口弹出、鸭子站好后按键控制。**已打补丁:MuJoCo 窗口和终端里按键都有效**(在窗口里按字母键会顺带触发 MuJoCo 自带的显示开关,画面样式可能变化,无伤大雅;想干净就在终端里按)。
@@ -197,11 +197,11 @@ MuJoCo 窗口弹出、鸭子站好后按键控制。**已打补丁:MuJoCo 窗口
 #### 当时的搭建步骤(已完成,重装才需要)
 
 1. `uv sync` 建好 `src\microduck_rl\.venv`(CPU 版 torch 即可满足推理)
-2. 下载官方策略到 `D:\robot\microduck\policies\`(9 个 onnx:走路/站立/坐站/捡地/踢球 ×2/翻滚/轮滑 ×2,外加 manifest.json 等):
+2. 下载官方策略到 `D:\robot\robolab\policies\`(9 个 onnx:走路/站立/坐站/捡地/踢球 ×2/翻滚/轮滑 ×2,外加 manifest.json 等):
    ```powershell
    # 直连 HF 被墙且本机代理(127.0.0.1:7890)常不在线 → 用国内镜像并绕过代理
    $env:HF_ENDPOINT="https://hf-mirror.com"; $env:NO_PROXY="*"; $env:HTTP_PROXY=""; $env:HTTPS_PROXY=""
-   & "D:\robot\microduck\src\microduck_rl\.venv\Scripts\python.exe" -c "from huggingface_hub import snapshot_download; snapshot_download('pollen-robotics/microduck-policies', local_dir=r'D:\robot\microduck\policies')"
+   & "D:\robot\robolab\src\microduck_rl\.venv\Scripts\python.exe" -c "from huggingface_hub import snapshot_download; snapshot_download('pollen-robotics/microduck-policies', local_dir=r'D:\robot\robolab\policies')"
    ```
 3. **给 `scripts/infer_policy.py` 打了 Windows 补丁**(两处):① 原脚本用 Linux 专用 `termios` 读键盘,Windows 崩 → `termios` 导入失败时回退 `msvcrt`;② 原脚本只收终端按键、MuJoCo 窗口按键无效(窗口还常抢焦点,导致"按键没反应") → 给 viewer 加了 `key_callback`,窗口内按键同样生效。补丁在本地仓库,`git diff` 可查。⚠️ 若 `git pull` 覆盖该文件需重打(症状:`No module named 'termios'` 或窗口按键无效)
 4. 验证通过:standing 策略下鸭子稳定站立(trunk_z≈116mm),4 个策略均加载,输入 `[1,61]` → 输出 `[1,14]`
@@ -229,7 +229,7 @@ uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 64 --agent.max-i
 ```powershell
 $env:WANDB_MODE="offline"
 $uv = "$env:USERPROFILE\.local\bin\uv.exe"
-cd D:\robot\microduck\src\microduck_rl
+cd D:\robot\robolab\src\microduck_rl
 & $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 64 --agent.max-iterations 5   # 冒烟
 & $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024                          # 正式训练
 ```

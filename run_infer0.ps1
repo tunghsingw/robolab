@@ -8,8 +8,8 @@ param(
     [ValidateSet("random", "zero")]
     [string]$Mode = "random"
 )
-$RL = "D:\robot\microduck\src\microduck_rl"
-$P  = "D:\robot\microduck\policies"
+$RL = (Join-Path $PSScriptRoot "src\microduck_rl")
+$P  = (Join-Path $PSScriptRoot "policies")
 $B  = "$P\untrained_$Mode.onnx"
 Write-Host "基准模式: $Mode  ($B)"
 Set-Location $RL   # infer_policy.py 内部用相对路径找机器人模型,必须在 RL 仓库目录下运行
