@@ -8,6 +8,9 @@
 > 通用开发和通用 ML 工具(git、uv、wandb、TensorBoard、Hugging Face、submodule/subtree 之类)**一律不收**,
 > 它们换个 Python 项目也会遇到,不属于这门手艺的词汇。
 >
+> 边界怎么划:`vcs2l` 收了、`git submodule` 没收——两者都是多仓库管理,但前者基本只在
+> ROS / 机器人生态里出现,后者到处都是。**看的是"实际在哪个圈子里用",不是"理论上能不能用在别处"。**
+>
 > **给 AI 助手**:对话里出现符合范围的新名词就写进来,别只在当轮解释一次。
 > **核实标记**:`✓源码` = 从本项目代码/文档里直接读到的;`✓` = 联网核实过或领域通用共识;`?` = 待核实,引用前先查。
 
@@ -94,5 +97,5 @@
 | rsl_rl | Robotic Systems Lab – RL | 苏黎世联邦理工(ETH)机器人系统实验室的 RL 库,提供 PPO 实现。腿足机器人 RL 的常用底座 | ✓ |
 | onshape-to-robot | — | Rhoban 的工具:通过 Onshape API 把 CAD 装配体导出成 URDF / SDF / MJCF。本项目每个 `config_mjcf_*.json` 就是它的配置 | ✓ |
 | vcs / vcstool | version control system tool | ROS 工作区的多仓库管理工具:从一个 `.repos` 清单文件(YAML)一次 clone / 更新多个上游仓库到指定目录,命令形如 `vcs import src < file.repos`。**本项目用它在 `src/` 下按 `upstream.repos` 拉 microduck / microduck_rl / mjlab 三个上游** | ✓ |
-| vcs2l | —(vcstool 的继任 fork) | vcstool 停更(2022 起)后的继任者,命令名仍是 `vcs`,可无缝替换。**本项目 INSTALL.md 装的是它**(`pip install vcs2l`) | ✓ |
+| vcs2l | — | vcstool 停止维护后的继任 fork,由 ROS 官方组织 ros-infrastructure 维护(官方未给出停更的具体时间点)。命令名仍是 `vcs`,可无缝替换。**本项目 INSTALL.md 装的是它**(`pip install vcs2l`) | ✓ |
 | ONNX | Open Neural Network Exchange | 跨框架跨平台的模型格式。本身是通用 ML 格式,但**"训练→导出 ONNX→机载运行时加载"是这个领域的标准部署路径**,所以收录 | ✓ |
