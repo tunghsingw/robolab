@@ -145,7 +145,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 Windows 侧(推理):
 
 - Python 3.12.6;`uv` 装在 `%USERPROFILE%\.local\bin\uv.exe`,**不在 PATH 里**
-- `D:\robot\robolab\src\microduck_rl\.venv` 已通过 `uv sync` 建好(之前 Doubao 的 setup.ps1/setup2.ps1 干的)
+- `D:\robot\robolab\src\microduck_rl\.venv` 已通过 `uv sync` 建好(步骤见 `INSTALL.md`)
 - torch 已换成 **CUDA 版 `2.9.1+cu128`**:`pyproject.toml` 里给 `sys_platform == 'win32'` 加了 `pytorch-cu128` 索引(不加的话 Windows 上 PyPI 默认给 CPU 轮子 `2.9.1+cpu`,`cuda.is_available()==False`)。日常用法仍是根目录三个 `run_infer*.ps1`(ONNX 推理);torch 换 GPU 版之后,Windows 在技术上也具备跑 `play` 回放的条件(有原生显示器,不用 viser),但没实测过
 
 WSL 侧(训练):
@@ -426,7 +426,7 @@ dnsTunneling=true
 
 - [x] clone 两仓库;`uv sync` 完成(但 torch 为 CPU 版);了解项目结构与训练/推理区别
 - [x] 跑通 CPU 推理:官方策略已下载到 `policies\`,infer_policy.py 打了 Windows 键盘补丁,`run_infer.ps1` 一键启动
-- [x] 根目录由"具身智能"改名为 robot:已更新 README、run_infer.ps1、setup*.ps1 里的路径;`.venv` 因 uv 入口 exe 内嵌旧绝对路径而失效,用 `uv sync --reinstall` 重建后恢复
+- [x] 根目录由"具身智能"改名为 robot(后又改为 robolab):`.venv` 因 uv 入口 exe 内嵌旧绝对路径而失效,删掉重新 `uv sync` 才恢复;脚本后来改用 `$PSScriptRoot`,不再受目录改名影响
 - [x] 训练环境就绪:WSL2 Ubuntu 24.04(rootfs 导入到 `D:/wsl/Ubuntu`),仓库在 WSL 内 `~/robolab/src/microduck_rl`,torch 2.9.1+cu128 CUDA 可用
 - [x] 冒烟测试通过(64 envs × 5 iters,惩罚项全 ≤ 0,nan_state=0,1.33s/iter)
 - [x] WSL 网络切换 mirrored 模式(`.wslconfig`),本机系统代理(127.0.0.1:7890)在 WSL 内可用,GitHub/HF 可直连;gh-proxy/USTC/hf-mirror 作为代理离线时的兜底

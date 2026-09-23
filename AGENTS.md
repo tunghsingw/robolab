@@ -30,7 +30,7 @@ Windows ↔ WSL 之间可直接走 `/mnt/d/robot/robolab/...`(WSL 里访问 D �
 ├── GLOSSARY.md REFERENCES.md         名词表 / 外部资料清单(人和 agent 共用)
 ├── upstream.repos                    上游清单:URL + 锁定的 commit
 ├── .gitignore
-├── run_infer*.ps1 setup*.ps1         自写脚本
+├── run_infer*.ps1                    自写脚本(推理入口)
 ├── patches/                          对上游的适配性修改(唯一记录)
 ├── policies/                         ONNX 策略
 ├── experiments/                      实验记录(阶段 2 起)
