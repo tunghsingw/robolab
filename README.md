@@ -140,7 +140,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 
 硬件(两个环境共用同一台机器):
 
-- Windows 11,RTX 3060 Laptop **6GB 显存**,驱动 591.86
+- Windows 11,RTX 3060 Laptop **6GB 显存**,驱动 610.60
 
 Windows 侧(推理):
 
