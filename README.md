@@ -113,14 +113,14 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 - WSL 里没有显示器,原生 MuJoCo 窗口开不了 → 在 WSL 中一律用网页查看器(`play` 的 viser、TensorBoard),Windows 浏览器开 `localhost:<端口>`(已切 mirrored 网络模式,端口互通)
 - GPU 两边都直接可用(RTX 3060 Laptop):WSL 和 Windows 的 venv 里都是 torch `2.9.1+cu128` + warp 1.12.0,都认得到 sm_86
 - 从 Git Bash 调 `wsl.exe` 要加 `MSYS_NO_PATHCONV=1`,否则路径参数会被改坏(详见下文)
-- 另有第三处**讨论沙箱**(一台独立的 Ubuntu,AI 助手在那儿读代码、写文档和脚本,**不跑任何真实负载**)。它够不到这台机器,文件靠 XFTP 手动同步——三处环境的分工、路径换算和同步约定见根目录 `AGENTS.md`
+- 另有第三处**讨论沙箱**(一台独立的 Ubuntu,AI 助手在那儿读代码、写文档和脚本,**不跑任何真实负载**)。它够不到这台机器,但同样是本仓库的 clone,文档和脚本走 git 同步——三处的分工与同步约定见根目录 `AGENTS.md`
 
 ## 两个仓库的分工
 
 | 目录 | 是什么 | 技术栈 |
 |---|---|---|
 | `src/microduck/` | 真机机载运行时("大脑"):守护进程、50 Hz 控制回路、加载 ONNX 策略 | Rust |
-| `src/microduck_rl/` | 策略训练("学校"):MuJoCo Warp + PPO,13 个任务,导出 ONNX | Python (uv 管理) |
+| `src/microduck_rl/` | 策略训练("学校"):MuJoCo Warp + PPO,**18 个已注册任务**,导出 ONNX | Python (uv 管理) |
 
 关键概念:训练 = 4096 只仿真鸭子试错学新动作(吃 GPU);推理 = 拿训练好的 `policy.onnx` 照本执行(CPU 就够)。策略共享 61 维观测契约(48 本体感知 + 13 指令),输入 `[1,61]` → 输出 `[1,14]` 舵机目标。
 
@@ -416,7 +416,7 @@ dnsTunneling=true
 
 ## 重要文档入口
 
-- `AGENTS.md`(根目录) — 三处环境(讨论沙箱 / Windows / WSL)的分工、路径换算、XFTP 同步约定;给 AI 助手看的操作规则
+- `AGENTS.md`(根目录) — 三处 clone(讨论沙箱 / Windows / WSL)的分工与同步约定;给 AI 助手看的操作规则
 - `src/microduck_rl/AGENTS.md` — 训练/奖励设计/sim2real 的经验手册(精华,必读)
 - `src/microduck_rl/README.md` — 任务列表、命令速查、发布流程
 - `src/microduck/docs/robot/simulation.md` — duck-sim 用法
@@ -430,6 +430,6 @@ dnsTunneling=true
 - [x] 训练环境就绪:WSL2 Ubuntu 24.04(rootfs 导入到 `D:/wsl/Ubuntu`),仓库在 WSL 内 `~/robolab/src/microduck_rl`,torch 2.9.1+cu128 CUDA 可用
 - [x] 冒烟测试通过(64 envs × 5 iters,惩罚项全 ≤ 0,nan_state=0,1.33s/iter)
 - [x] WSL 网络切换 mirrored 模式(`.wslconfig`),本机系统代理(127.0.0.1:7890)在 WSL 内可用,GitHub/HF 可直连;gh-proxy/USTC/hf-mirror 作为代理离线时的兜底
-- [x] 讨论环境迁到独立 Ubuntu 沙箱(AI 助手不再跑在 Windows 侧);三处环境分工与 XFTP 同步约定写入根目录 `AGENTS.md`
+- [x] 建 GitHub 仓库 `tunghsingw/robolab`,三处(沙箱 / Windows `D:\robot\robolab` / WSL `~/robolab`)都改成它的 clone,文档与脚本走 git 同步
 - [x] Windows 原生训练打通并与 WSL 实测对比(1024 envs × 200 迭代:WSL 7:28 / Windows 7:56,差 6%),两边都能训练
 - [ ] 第一个自己训练的步态(从 `--env.scene.num-envs 1024` 起步)

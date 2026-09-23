@@ -1,0 +1,49 @@
+# 许可
+
+本仓库混合了两类内容,分别适用不同许可。
+
+## 1. 自有内容 —— MIT
+
+学习笔记与文档(`README.md`、`INSTALL.md`、`AGENTS.md`、`GLOSSARY.md`、`REFERENCES.md`)、
+自写脚本(`run_infer*.ps1`、`setup*.ps1`)、工作区配置(`upstream.repos`、`.gitignore`)、
+实验记录(`experiments/`),以及自己训练导出的 ONNX 策略(`policies/` 下非官方的那几个)。
+
+```
+MIT License
+
+Copyright (c) 2026 tunghsingw
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## 2. `patches/` 下的补丁 —— Apache-2.0(随上游)
+
+`patches/*.patch` 是对以下上游项目源码的修改,属于衍生作品,**沿用上游的 Apache-2.0 许可**:
+
+| 上游 | 许可 |
+|---|---|
+| [pollen-robotics/microduck](https://github.com/pollen-robotics/microduck) | Apache-2.0 |
+| [pollen-robotics/microduck_rl](https://github.com/pollen-robotics/microduck_rl) | Apache-2.0 |
+| [mujocolab/mjlab](https://github.com/mujocolab/mjlab) | Apache-2.0 |
+
+## 3. 不在本仓库内的部分
+
+`src/` 下的上游代码**不包含在本仓库中**(见 `.gitignore`),由 `upstream.repos` 声明、使用时自行拉取,
+各自遵循其原始许可。`policies/` 下的官方策略(`alpha_*`、`ball_kick_*`、`roller*`、`roulade`)同样不入库,
+来自 Hugging Face 的 `pollen-robotics/microduck-policies`,遵循其发布许可。
