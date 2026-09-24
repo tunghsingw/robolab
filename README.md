@@ -147,7 +147,7 @@ Windows 侧(推理):
 
 - Python 3.12.6;`uv` 装在 `%USERPROFILE%\.local\bin\uv.exe`,**不在 PATH 里**
 - `D:\robot\robolab\src\microduck_rl\.venv` 已通过 `uv sync` 建好(步骤见 `INSTALL.md`)
-- torch 已换成 **CUDA 版 `2.9.1+cu128`**:`pyproject.toml` 里给 `sys_platform == 'win32'` 加了 `pytorch-cu128` 索引(不加的话 Windows 上 PyPI 默认给 CPU 轮子 `2.9.1+cpu`,`cuda.is_available()==False`)。日常用法仍是根目录三个 `run_infer*.ps1`(ONNX 推理);torch 换 GPU 版之后,Windows 在技术上也具备跑 `play` 回放的条件(有原生显示器,不用 viser),但没实测过
+- torch 已换成 **CUDA 版 `2.9.1+cu128`**:`pyproject.toml` 里给 `sys_platform == 'win32'` 加了 `pytorch-cu128` 索引(不加的话 Windows 上 PyPI 默认给 CPU 轮子 `2.9.1+cpu`,`cuda.is_available()==False`)。日常用法仍是根目录三个 `run_infer*.ps1`(ONNX 推理);torch 换 GPU 版之后,Windows 也能跑 `play` 回放(**已实测**,用 `--viewer viser` 网页查看器;命令见下文「`uv run play`」一节)
 
 WSL 侧(训练):
 
@@ -257,6 +257,14 @@ WSL `~/robolab/src/microduck_rl/logs/rsl_rl/velocity/` 下:
 
 Windows 侧 `logs\rsl_rl\velocity\` 下另有 3 个 run(2026-09-18),最多到 `model_1750`,是验证 Windows 能否训练时留下的。
 
+存档要在 Windows 上回放,从 WSL 整体复制过去(放在两边相同的相对位置;`logs` 被 git 忽略,不会误提交;`-n` 不覆盖已有文件,可重复执行):
+
+```bash
+cd ~/robolab/src/microduck_rl
+mkdir -p /mnt/d/robot/robolab/src/microduck_rl/logs
+cp -rn logs/rsl_rl /mnt/d/robot/robolab/src/microduck_rl/logs/
+```
+
 #### 训练统计界面:TensorBoard(本机网页,看曲线)
 
 每次训练自动往 `logs/rsl_rl/velocity/<run目录>/` 写 TensorBoard 事件文件,纯本地、不依赖外网。想看训练曲线,另开一个 WSL 终端:
@@ -330,6 +338,19 @@ WANDB_MODE=offline uv run play Mjlab-Velocity-Flat-MicroDuck \
 - `--viewer viser` 用网页 3D 查看器(WSL 里没显示器,原生 MuJoCo 窗口开不了,必须用这个)
 - `WANDB_MODE=offline` 跳过 wandb 登录(play 默认想从 wandb 拉 run,本地文件回放用不到)
 - 换任务时把 `Mjlab-Velocity-Flat-MicroDuck` 和 `velocity` 目录名对应换掉(`uv run list-envs` 看任务列表)
+
+**Windows 上回放**(已实测;存档先从 WSL 复制过来,见上文「已有的训练履历」):
+
+```powershell
+$env:WANDB_MODE="offline"
+$uv = "$env:USERPROFILE\.local\bin\uv.exe"
+cd D:\robot\robolab\src\microduck_rl
+$RUN = "logs\rsl_rl\velocity\2026-09-16_09-07-17_velocity"
+& $uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_12500.pt" --num-envs 2 --viewer viser
+```
+
+Windows 上也要显式写 `--viewer viser`:网页查看器才有 **Rewards 标签页**(各奖励项实时条形图)和 **Checkpoints 标签页**(下拉框热切换同目录下的存档,不用重启),原生 MuJoCo 窗口没有存档切换。
+⚠️ `uv run` 启动前会先把环境同步到锁文件;终端停在一个转圈的包名(如 `⠧ cycler==0.12.1`)= 在下载依赖、网络卡住了,**不是 play 在跑**。先 `& $uv sync --dry-run` 看它想装什么;出现 viser 网址、浏览器能开 `localhost:8080` 才算启动成功。
 
 预期管理:5000 迭代左右还早(稳定步态要 4000–6000+),看到走得歪歪扭扭是正常进度。
 
