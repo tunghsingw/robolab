@@ -42,3 +42,15 @@
 | | | | |
 
 ## 四、结论
+
+## 附:16 项奖励的来源(核对自上游源码)
+
+奖励是**任务定义的一部分**,写在任务配置里,不在网络里。分三层:
+
+| 层 | 在哪 | 包含哪些项 | 可迁移性 |
+|---|---|---|---|
+| ① 框架的"速度跟踪"通用模板 | `src/mjlab/src/mjlab/tasks/velocity/velocity_env_cfg.py` | track_linear_velocity、track_angular_velocity、upright、pose、body_ang_vel、angular_momentum、dof_pos_limits、action_rate_l2、air_time、foot_clearance、foot_swing_height、foot_slip(另有 soft_landing,microduck 删掉了) | 换机器人也一样:mjlab 里人形 Unitree G1、四足 Unitree Go1 用的是同一个模板 |
+| ② 各机器人自己调参数 | microduck:`src/microduck_rl/src/mjlab_microduck/tasks/microduck_velocity_env_cfg.py` | 同一批项,改权重、改容差、改"哪只脚/哪个关节" | 方法通用,数值 microduck 特有 |
+| ③ 各机器人自己加的项 | 同上 | self_collisions(用框架现成函数)、head_pose_tracking、body_pose_tracking、head_pose_bias(microduck 自写) | 自碰撞通用;头部三项 microduck 特有(它的头占体重约 38%) |
+
+同一模板在三台机器人上的差异举例:`air_time` 在 microduck 是 +3.0,在 G1 和 Go1 都设为 0;Go1 另加了小腿、躯干头部的碰撞惩罚。
