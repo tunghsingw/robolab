@@ -324,5 +324,6 @@ dnsTunneling=true
 - [x] 建 GitHub 仓库 `tunghsingw/robolab`,三处(沙箱 / Windows `D:\robot\robolab` / WSL `~/robolab`)都改成它的 clone,文档与脚本走 git 同步
 - [x] Windows 原生训练打通并与 WSL 实测对比(1024 envs × 200 迭代:WSL 7:28 / Windows 7:56,差 6%),两边都能训练
 - [ ] 第一个自己训练的步态(从 `--env.scene.num-envs 1024` 起步)
+- [ ] 阶段 0 会用命令:命令笔记已建(`experiments/stage0_commands.md`),第十节练习待做
 - [ ] 阶段 1 学会看:工具、面板、16 项奖励已认识;存档逐个对比和结业考试**未完成**(见 `experiments/stage1_checkpoint_behavior_map.md`)
 - [ ] 阶段 2 学会改:大纲已定(见 `experiments/stage2_reward_ablation.md`)
