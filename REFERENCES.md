@@ -47,16 +47,21 @@
 | Atlas + TRI 大行为模型 | https://www.therobotreport.com/boston-dynamics-tri-use-large-behavior-models-train-atlas-humanoid/ | **Atlas 的真实技术栈**:MPC 做底层控制和遥操作底座,上面叠扩散 Transformer 的 LBM | ✓ |
 | 操作模仿学习分类综述 | https://arxiv.org/html/2508.17449v1 | IL 在操作方向的方法谱系;行为克隆占比等数据 | ✓ |
 | BAM 论文:Duclusaud et al., ICRA 2025 | https://arxiv.org/abs/2410.08650 | **为什么 MuJoCo 默认的"库仑 + 粘性"摩擦不够用**;Stribeck / 负载相关摩擦模型;摆锤台架辨识方法 | ✓ |
+| **人形机器人运动智能知识库**(RealXiaoze/humanoid-motion-intelligence,中文) | https://github.com/RealXiaoze/humanoid-motion-intelligence | **运动控制方向的中文索引与地图**:六条技术路线(动作数据、Locomotion、动作跟踪、LocoManip、世界模型/VLA、工程部署)+ 论文逐篇解读 + 训练框架/数据集/公司/求职资料。2026-07 建库、持续更新(600+ star),CC BY-NC-SA。**它是二手索引,不是结论来源**:它自己的 AGENTS.md 就要求"回原始论文/官方仓库核实",所以引用时只用它找入口,结论回原文 | ✓ 读过主页、目录和下列分页 |
+| ↳ `技术与研究/02_Locomotion与运动先验.md` | https://github.com/RealXiaoze/humanoid-motion-intelligence/blob/main/技术与研究/02_Locomotion与运动先验.md | **腿足 RL 运动控制的论文清单**(基础行走、地形感知、抗扰、运动先验/AMP)+ **几十个"按机器人配训练环境"的项目**(Unitree RL Mjlab、AMP_mjlab 等基于 mjlab 的,以及各厂商基于 Isaac Lab / legged_gym 的)。阶段 4 换机器人时,看别人怎么给自己的本体写观测/奖励/随机化配置 | ✓ |
+| ↳ `技术与研究/06_工程与实机部署.md` | https://github.com/RealXiaoze/humanoid-motion-intelligence/blob/main/技术与研究/06_工程与实机部署.md | **换机器人的工具箱**:URDF/MJCF/USD 模型资源(MuJoCo Menagerie、robot_descriptions.py、在线 URDF 比较器)、系统辨识与 Sim2Real 工具(PACE Sim2Real:固定基座激励 + CMA-ES 拟合惯量/摩擦/延迟;PRIME;ASAP)、策略推理运行框架、评测基准 | ✓ |
+| ↳ `强化学习开发者必备开源资料/`(README + 书籍与课程) | https://github.com/RealXiaoze/humanoid-motion-intelligence/tree/main/强化学习开发者必备开源资料 | RL 框架与仿真平台一览(RSL-RL、legged_gym、Isaac Lab、K-Sim 等,每条一句用途);**中文 RL 入门材料**(Easy-RL、动手学强化学习、王树森课程)和机器人学/动力学/足式机器人书单。补 RL 与机器人学基础时从这里挑 | ✓ |
+| ↳ `技术与研究/双轮足机器人训练开源方案表.md` | https://github.com/RealXiaoze/humanoid-motion-intelligence/blob/main/技术与研究/双轮足机器人训练开源方案表.md | 6 个双轮足机器人 RL 训练方案对照(框架、动作接口"RL 直接出关节动作 vs RL+VMC"、任务能力)。**以后第三方设备若是轮足形态,从这张表起步** | ✓ |
 
-## 四、经典奠基论文(⚠️ 凭记忆列出,待核实)
+## 四、经典奠基论文(已核实:标题、作者、日期均查自 arXiv 摘要页)
 
-下面几篇是 AI 助手凭记忆列的,**引用前必须先核实作者、年份、结论**:
-
-| 论文 | 大致内容 | 核 |
-|---|---|:-:|
-| Hwangbo et al., Science Robotics 2019 | actuator network——用神经网络建执行器模型,sim2real 的奠基工作之一。本项目的 BAM 是同一思路 | ? |
-| Rudin et al., CoRL 2021 | 大规模并行 RL("几分钟学会走路"),现在几千环境并行训练的范式源头 | ? |
-| Lee et al., Science Robotics 2020 | 复杂地形上的盲走(只靠本体感知,不用视觉) | ? |
+| 论文 | 链接 | 能回答什么 | 核 |
+|---|---|---|:-:|
+| Hwangbo et al. 2019, *Learning agile and dynamic motor skills for legged robots*(Science Robotics) | https://arxiv.org/abs/1901.08652 | **执行器网络**(actuator network)——用真机数据训一个小网络当执行器模型,替代解析模型,sim2real 奠基工作之一。本项目的 BAM 是同一思路的解析版 | ✓ |
+| Rudin et al. 2021, *Learning to Walk in Minutes Using Massively Parallel Deep RL* | https://arxiv.org/abs/2109.11978 · 代码 https://github.com/leggedrobotics/legged_gym | **几千环境 GPU 并行 + 地形课程**训练四足行走——现在"几千只鸭子并行试错"这一范式的源头;legged_gym 就是它的代码 | ✓ |
+| Lee et al. 2020, *Learning Quadrupedal Locomotion over Challenging Terrain*(Science Robotics) | https://arxiv.org/abs/2010.11251 | **只靠本体感知的盲走**:特权信息教师 → 本体历史学生。本项目"非对称 Actor-Critic、actor 观测里没有线速度"的思想来源 | ✓ |
+| Tan et al. 2018, *Sim-to-Real: Learning Agile Locomotion For Quadruped Robots* | https://arxiv.org/abs/1804.10332 | **执行器建模 + 延迟仿真 + 系统辨识 + 域随机化**跨越四足 sim2real 差距。回答"为什么小型机器人要在执行器模型上下功夫" | ✓ |
+| Peng et al. 2021, *AMP: Adversarial Motion Priors for Stylized Physics-Based Character Control* | https://arxiv.org/abs/2104.02180 | **用对抗判别器从动作数据学"风格奖励"**,替代手写的步态正则项。知识库里大量人形项目(AMP_mjlab、各厂商 *_amp)都基于它;阶段 3 想让步态"自然"时的另一条路 | ✓ |
 
 ## 五、加新条目的格式
 
