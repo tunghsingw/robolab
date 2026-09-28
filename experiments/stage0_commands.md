@@ -92,6 +92,10 @@ uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 64 --agent.max-i
 
 64 个环境跑 5 轮,1 分钟内结束。通过标准:不报错;`Episode_Reward` 下惩罚项全 ≤ 0;`nan_state` 为 0。能拦下约 95% 的配置错误。
 
+**怎么认出哪些是惩罚项**:看**这一项的函数在罚什么**,不看权重正负。上游有两种写法:mjlab 的代价函数返回 ≥ 0、配负权重;microduck 自写的 `*_penalty`、`*_l1` 函数自己返回 ≤ 0、配**正**权重(如 SitStand 的 `descent_speed` 权重 +10)。两种写法乘出来都应 ≤ 0。所以核对方法是:按名字挑出惩罚类的项(`*_penalty`、`*_l1`、`*_l2`、`body_ang_vel`、`angular_momentum`、`dof_pos_limits`、`self_collisions`、`gentle_motion`、`descent_speed` 这类"罚某种坏动作"的),看**终端打印的值**是否 ≤ 0。奖励类的项(`*_tracking`、`posture_*`、`upright_*`)是正的才对。
+
+实例(SitStand 冒烟,2026-09-28):20 项里 9 项奖励类为正、11 项惩罚类全 ≤ 0(其中 `rise_speed`、`joint_torque_rate_l2` 权重为 0 恒为 0)→ 通过。
+
 ### 正式训练
 
 ```powershell
