@@ -23,7 +23,16 @@
 
 ### 第 3 步:学会改权重的方法
 
-- 优先用命令行覆盖(不改文件),写法先用 `--help` 确认;不行再临时改任务配置文件,**训完 `git checkout` 还原,不提交、不存补丁**(AGENTS.md 同步约定)。
+- **用的就是上游自带的训练配置**:任务 `Mjlab-Velocity-Flat-MicroDuck` 的奖励、课程、域随机化全部照旧,算法是 rsl_rl 的 PPO。阶段 2 只动其中一个数字。
+- 参数在哪:`src/microduck_rl/src/mjlab_microduck/tasks/microduck_velocity_env_cfg.py`(奖励权重在"=== REWARDS ==="一段,约 270–350 行);其中 12 项的默认值来自 mjlab 的通用模板 `src/mjlab/src/mjlab/tasks/velocity/velocity_env_cfg.py`,microduck 在自己文件里覆盖。
+- **方法一(推荐):命令行覆盖,不改文件。** 格式 `--env.rewards.<项名>.weight <值>`,项名里的下划线写成连字符或下划线都行(已用锁定版本 tyro 1.0.5 验证)。例:
+
+  ```powershell
+  & $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.max-iterations 1000 --agent.run-name e1_airtime0 --env.rewards.air-time.weight 0.0
+  ```
+
+  **验证是否生效**:训练开头打印的 `Active Reward Terms` 表里,该项的 Weight 一栏应显示新值。不对立刻 Ctrl+C。命令太长会被 PowerShell 截断,见 README。
+- **方法二(兜底):临时改上面那个配置文件**,训完 `git -C src/microduck_rl checkout .` 还原,**不提交、不存补丁**(AGENTS.md 同步约定)。
 - 陷阱:`action_rate_l2` 和 `head_pose_bias` 的权重由课程学习按轮数覆盖,改它们的初始权重在 500 轮后就被盖掉。改这两项要改课程,不是改权重。
 - `Episode_Reward/*` 记的是**乘过权重**的值。权重改成 0,曲线就是 0,不代表行为没了——要看回放和 Metrics 组。
 
