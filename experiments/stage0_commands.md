@@ -276,6 +276,23 @@ logs\rsl_rl\<日志目录>\<开始时间>_<run名>\
 所以想停时,**等终端刚过一个 250 的整数倍轮次**(刚存完档)再按,损失最小。
 没跑满 `max-iterations` 不影响存档的可用性:存档好不好看回放行为,不看训练有没有跑满。
 
+### 训练已经在跑,想让它停在某个轮次
+
+运行中的训练**改不了** `max-iterations`(只在启动时读一次)。办法是等目标轮次的存档写好再按 Ctrl+C,效果和一开始就设成那个轮数相同。目标轮次要是 250 的整数倍(那一轮才会存档)。
+
+另开一个 PowerShell 窗口,运行下面的等待命令(把路径和轮数换成自己的):
+
+```powershell
+$RUN = "D:\robot\robolab\src\microduck_rl\logs\rsl_rl\velocity\<run目录名>"
+while (-not (Test-Path "$RUN\model_15000.pt")) { Start-Sleep 5 }
+Start-Sleep 10; "model_15000.pt 已存好,可以停了"; [console]::beep(1000,800)
+```
+
+- `while (-not (Test-Path ...)) { Start-Sleep 5 }`:文件不存在就每 5 秒再查一次。
+- 出现后再等 10 秒,保证文件写完;然后打印提示、响一声。
+- 听到后回训练窗口按 Ctrl+C。
+- 确认存档完整:`Get-Item "$RUN\model_15000.pt" | Select-Object Name, Length`,大小应和前一个存档接近(本项目约 4.7 MB)。
+
 ### 续训
 
 从某个存档接着训练:
