@@ -131,7 +131,18 @@ WSL 写法完全相同。
 
 ## 五、中断与续训
 
-随时 **Ctrl+C** 中断,最多丢最近 250 轮。续训:
+随时 **Ctrl+C** 中断。**中断后什么还能用**:
+
+| 产物 | 中断后 |
+|---|---|
+| 已存的 `model_*.pt` | **全部可用**:回放、导出 ONNX、续训都行。每个存档都是独立完整的快照,不依赖训练"跑完" |
+| TensorBoard 曲线 | 记录到中断那一轮为止,完整可看 |
+| 最后一个存档之后的轮次 | **丢失**(最多 249 轮)。Ctrl+C 不会额外补存一次 |
+
+实例:Windows 的 `2026-09-18_18-57-35_velocity` 曲线记到约第 1894 轮,但最后一个存档是 `model_1750.pt`——中间那 144 轮的学习成果没留下。
+所以想停,最好**等终端刚打完一个 250 整数倍的轮次**(刚存完档)再按。
+
+续训:
 
 ```powershell
 uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.resume True --agent.load-run 2026-09-15_12-26-40_velocity --agent.load-checkpoint model_12500.pt --agent.max-iterations 1000
