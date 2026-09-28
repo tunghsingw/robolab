@@ -8,6 +8,74 @@
 
 ---
 
+## 训练指令基础
+
+### 任务 ID:`Mjlab-Velocity-Flat-MicroDuck` 是什么
+
+它不是指令集,是一个**任务的注册名**。四段各有含义:
+
+| 段 | 含义 | 同位置的其它取值 |
+|---|---|---|
+| `Mjlab` | 用 mjlab 框架注册的任务(前缀约定) | — |
+| `Velocity` | 任务类型:**速度跟踪**(按指令速度走) | VelStand、StandUp、SitStand、GroundPick、BallKick、Spin、Roulade(翻滚)… |
+| `Flat` | 地形:平地 | Rough(崎岖地形) |
+| `MicroDuck` | 机器人 | mjlab 自带的 `Unitree-G1`(人形)、`Unitree-Go1`(四足) |
+
+一个任务 ID 在注册时绑定了四样东西(`src/microduck_rl/src/mjlab_microduck/tasks/__init__.py`):
+
+| 绑定项 | 是什么 |
+|---|---|
+| `env_cfg` | **训练用的环境配置**:机器人模型、观测、动作、16 项奖励、终止条件、课程学习、域随机化、指令范围——"任务定义"几乎全在这里 |
+| `play_env_cfg` | 回放用的环境配置(同一函数传 `play=True`:推力更频繁、地形小一些) |
+| `rl_cfg` | **算法配置**:PPO 超参数(学习率 1e-3、折扣 γ=0.99 等)、网络结构、`experiment_name="velocity"`(日志目录名)、`save_interval=250`、`num_steps_per_env=24`、`max_iterations=50000` |
+| `runner_cls` | 训练循环的实现(microduck 在 rsl_rl 基础上的一个子类) |
+
+所以**换任务 = 换这个 ID**,训练命令本身不变。本项目注册了 18 个,`uv run list-envs` 可列出。【ID 命名是 mjlab 约定;"任务 = 环境配置 + 算法配置"这件事换机器人也一样】
+
+### 命令结构
+
+```
+uv run  train  Mjlab-Velocity-Flat-MicroDuck  --env.xxx ...   --agent.xxx ...
+ 环境    做什么   哪个任务                      改环境配置      改算法/运行配置
+```
+
+`--env.` 开头的覆盖 `env_cfg` 里的字段,`--agent.` 开头的覆盖 `rl_cfg` 里的字段。层级用点号,字段名下划线可写成连字符。
+
+### 常用选项
+
+| 选项 | 作用 | 备注 |
+|---|---|---|
+| `--env.scene.num-envs 1024` | 并行环境数 | 6 GB 显存从 1024 起步;对照实验必须一致 |
+| `--agent.max-iterations N` | 本次跑 N 轮 | 续训时是"再跑 N 轮"。不写 = 50000 |
+| `--agent.run-name xxx` | 给 run 目录加后缀 | 目录名 = `<时间戳>_xxx`,不写则后缀是 `velocity` |
+| `--agent.seed N` | 随机种子 | 默认 42。量噪声带时换它 |
+| `--env.rewards.<项>.weight V` | 改某项奖励权重 | 阶段 2 的主要手段 |
+| `--agent.resume True` + `--agent.load-checkpoint model_X.pt` | 续训 | 见 README「中断与继续训练」 |
+| `--help` | 列出全部可改字段 | 输出很长,用 `Select-String` 过滤 |
+
+### 一轮(iteration)做了什么
+
+1. **采样**:1024 只鸭子各走 24 步(`num_steps_per_env`),共 24,576 步经验,约合仿真时间 8 分钟(每步 1/50 s)
+2. **更新**:用这批经验跑 PPO,改一次网络权重
+3. 每 250 轮存一个 `model_XXXX.pt`,每轮往 TensorBoard 写一次数
+
+所以横轴"1000 轮" ≈ 2500 万步经验。
+
+### 开跑后终端里看什么
+
+每轮打印一块,先盯这几行:
+
+| 行 | 看什么 |
+|---|---|
+| `Learning iteration k/N` | **分母 N 对不对**(PowerShell 截断参数时这里会露馅) |
+| `Mean reward` / `Mean episode length` | 和 TensorBoard 的 Train 组是同一个数 |
+| `Iteration time` | 每轮耗时,Windows 1024 环境约 2.4 s |
+| `ETA` | 预计剩余时间 |
+
+开头还会打印几张表(`Active Reward Terms` 等),**核对改动是否生效就看它**。
+
+---
+
 ## 大纲
 
 ### 第 1 步:建立对照组(baseline)
