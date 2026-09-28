@@ -28,37 +28,16 @@
 
 ---
 
-## 一、启动命令(Windows PowerShell,存档已从 WSL 复制到相同相对路径)
+## 一、启动命令
 
-### play 回放查看器(窗口一)
+命令的完整说明见 [`stage0_commands.md`](stage0_commands.md)(第一、六、七节)。这里只留阶段 1 天天用的两条,复制即用:
 
 ```powershell
-$env:WANDB_MODE="offline"
-$uv = "$env:USERPROFILE\.local\bin\uv.exe"
-cd D:\robot\robolab\src\microduck_rl
+$env:WANDB_MODE="offline"; $uv = "$env:USERPROFILE\.local\bin\uv.exe"; cd D:\robot\robolab\src\microduck_rl
 $RUN = "logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity"
-Test-Path "$RUN\model_0.pt"
-& $uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_0.pt" --num-envs 2 --viewer viser
+& $uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_0.pt" --num-envs 2 --viewer viser   # 窗口一 → localhost:8080
+& $uv run tensorboard --logdir $RUN                                                                                # 窗口二 → localhost:6006
 ```
-
-- `Test-Path` 必须是 `True`,否则存档没复制到位。
-- 浏览器开 **`http://localhost:8080`**。看完终端 **Ctrl+C**,别一直占显存。
-- 命令结构 = `uv run` + `play` + 任务名 + 选项。`train`、`list-envs` 同一格式,学会一条等于学会一族。
-- 只需要记 4 个选项:`--checkpoint-file`(回放哪个存档)、`--num-envs`(几只鸭子)、`--viewer viser`(网页查看器,**才有奖励条和存档切换**)、`--agent zero|random`(不加载存档,做对照)。
-- 终端停在转圈的包名(如 `⠧ cycler==0.12.1`)= `uv run` 在同步依赖、网络卡住,**不是 play 在跑**。出现 viser 网址才算启动成功。
-- WSL 侧命令见 README「`uv run play`」一节,只是根目录不同。
-
-### TensorBoard 训练曲线(窗口二)
-
-```powershell
-$uv = "$env:USERPROFILE\.local\bin\uv.exe"
-cd D:\robot\robolab\src\microduck_rl
-& $uv run tensorboard --logdir logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity
-```
-
-- 浏览器开 **`http://localhost:6006`**。
-- `--logdir` 指到单个 run 目录 = 只看这一个;指到 `logs\rsl_rl\velocity` = 所有 run 叠在一起(阶段 2 对比用)。
-- 它只读训练时写下的 `events.out.tfevents.*`,不跑仿真、不碰存档。
 
 ---
 

@@ -63,10 +63,11 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 **难题没消失,只是从『设计控制器』搬到了『设计奖励 + 把仿真做准』。** 这就是为什么本项目的经验手册
 (`src/microduck_rl/AGENTS.md`)九成篇幅在讲奖励和物理对齐,网络结构一句话带过(四层 MLP,约 20 万参数)。
 
-### 实践路线(四阶段)
+### 实践路线(阶段 0 + 四阶段)
 
 | 阶段 | 练什么 | 产出 | 碰代码吗 |
 |---|---|---|---|
+| **0. 会用命令** | 训练、回放、看曲线、续训、导出的命令语法;怎么指定自带任务 | 能独立跑完一整套(`experiments/stage0_commands.md`) | 否 |
 | **1. 学会看** | 回放不同 checkpoint 看行为演化,同时对着 TensorBoard 找对应指标 | 「数字 ↔ 行为」映射表 | 否 |
 | **2. 学会改** | 奖励消融:一次只改一项权重,跑 200–500 轮看变化 | 自己的实验记录表 | 改一个数字 |
 | **3. 学会定义任务** | 挑个没训过的任务(SitStand / BallKick)走完整闭环 | 独立完成"定义→训练→部署" | 读配置 |
@@ -216,31 +217,11 @@ MuJoCo 窗口弹出、鸭子站好后按键控制。**已打补丁:MuJoCo 窗口
 
 ### 第二步:本机训练 ✅ 已搭好(WSL2 Ubuntu 24.04)
 
-**日常使用:在 PowerShell 里进 WSL 跑训练**
+**日常命令(训练、续训、回放、看曲线、导出)统一见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md)**,那里是命令的唯一权威出处(Windows 为主,附 WSL 写法)。
 
-```powershell
-wsl -d Ubuntu                     # 进入 Ubuntu(默认用户 robot,免密 sudo)
-```
+本节只记环境事实:WSL 里 `uv` 直接可用;Windows 上 `uv.exe` 不在 PATH,要写全路径。已验证 torch 2.9.1+cu128 CUDA 可用,warp 1.12.0 认到 RTX 3060(sm_86);冒烟测试通过(所有惩罚项 ≤ 0,nan_state=0,1.33 s/iter)。一个能走的步态预计 4~8 小时;正式大 run 可加 `--hf-jobs` 扔 Hugging Face 云 GPU。
 
-```bash
-cd ~/robolab/src/microduck_rl
-uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024   # 训练(6GB 显存从 1024 起步,别开 4096)
-uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 64 --agent.max-iterations 5   # 冒烟测试(仓库铁律:大 run 前必跑)
-```
-
-已验证:torch 2.9.1+cu128 CUDA 可用,warp 1.12.0 认到 RTX 3060(sm_86);冒烟测试通过(所有惩罚项 ≤ 0,nan_state=0,1.33s/iter)。一个能走的步态预计 4~8 小时;正式大 run 可加 `--hf-jobs` 扔 Hugging Face 云 GPU。
-
-**也可以在 Windows 原生跑训练**(速度和 WSL 一样,见上文对比)。`uv.exe` 不在 PATH 里,所以要写全路径;先设一次变量,本窗口内后续都能用:
-
-```powershell
-$env:WANDB_MODE="offline"
-$uv = "$env:USERPROFILE\.local\bin\uv.exe"
-cd D:\robot\robolab\src\microduck_rl
-& $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 64 --agent.max-iterations 5   # 冒烟
-& $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024                          # 正式训练
-```
-
-⚠️ **PowerShell 粘贴长命令会被截断**(实测 160 多个字符就被切掉,后面的参数直接丢失,于是闷头按默认值跑)。所以命令要拆短、用变量;**每次开跑先看一眼 `Learning iteration 0/N` 的分母对不对**,不对立刻 Ctrl+C。
+⚠️ **PowerShell 粘贴长命令会被截断**(实测 160 多个字符后的参数直接丢失,闷头按默认值跑)。命令要拆短、用变量;**每次开跑先看 `Learning iteration 0/N` 的分母**。
 
 #### 已有的训练履历(阶段 1 的素材)
 
@@ -258,132 +239,18 @@ WSL `~/robolab/src/microduck_rl/logs/rsl_rl/velocity/` 下:
 
 Windows 侧 `logs\rsl_rl\velocity\` 下另有 3 个 run(2026-09-18),最多到 `model_1750`,是验证 Windows 能否训练时留下的。
 
-存档要在 Windows 上回放,从 WSL 整体复制过去(放在两边相同的相对位置;`logs` 被 git 忽略,不会误提交;`-n` 不覆盖已有文件,可重复执行):
+存档要在 Windows 上回放,先从 WSL 整体复制到 Windows 的相同相对位置,命令见阶段 0 笔记第六节(`logs` 被 git 忽略,不会误提交)。
 
-```bash
-cd ~/robolab/src/microduck_rl
-mkdir -p /mnt/d/robot/robolab/src/microduck_rl/logs
-cp -rn logs/rsl_rl /mnt/d/robot/robolab/src/microduck_rl/logs/
-```
+#### 看曲线、续训、回放、导出
 
-#### 训练统计界面:TensorBoard(本机网页,看曲线)
+命令和选项说明见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md) 第五至八节;回放和 TensorBoard 的面板怎么读见 [`experiments/stage1_checkpoint_behavior_map.md`](experiments/stage1_checkpoint_behavior_map.md)。
 
-每次训练自动往 `logs/rsl_rl/velocity/<run目录>/` 写 TensorBoard 事件文件,纯本地、不依赖外网。想看训练曲线,另开一个 WSL 终端:
+几条环境事实(不重复命令):
 
-```bash
-cd ~/robolab/src/microduck_rl
-uv run tensorboard --logdir logs/rsl_rl
-```
-
-然后 **Windows 浏览器打开 `http://localhost:6006`**(mirrored 网络下 WSL 端口即 Windows localhost)。停止:终端 Ctrl+C;后台残留用 `pkill -f tensorboard` 清。
-
-SCALARS 页按前缀分组,训练时重点盯三条(AGENTS.md 的读法):
-
-| 看什么 | 在哪 | 判据 |
-|---|---|---|
-| 总奖励在涨 | `Train/mean_reward` | 持续上升 |
-| **主任务项**在涨 | `Episode_Reward/track_linear_velocity` | 总奖励光靠正则项涨是假象,主任务项必须自己在涨 |
-| 惩罚项符号正确 | `Episode_Reward/` 下的 `action_rate_l2`、`body_ang_vel` 等 | **全部 ≤ 0**,出现正值 = 奖励符号写反,策略在刷漏洞 |
-
-另外 `Episode_Termination/nan_state` 应恒为 0(物理数值没爆炸),`fell_over` 前期高后期降是正常学习轨迹。
-
-说明:TensorBoard 是纯监控,只能看不能改;中途调参的方式是 Ctrl+C 停训练→改配置→按上面"继续训练"续跑。wandb(云端,项目名 `mjlab_microduck`)功能更强但要注册账号,不想用就 `export WANDB_MODE=offline`,不影响训练和 TensorBoard。
-
-#### 中断与继续训练
-
-训练可以随时 **Ctrl+C** 中断:每 250 迭代自动存一个 checkpoint(`logs/rsl_rl/velocity/<run目录>/model_XXXX.pt`),最多损失最近 250 迭代的进度,已存的档不会作废。
-
-继续训练(复制即用,自动找最新 run 的最新存档):
-
-```bash
-cd ~/robolab/src/microduck_rl
-RUN=$(ls -td logs/rsl_rl/velocity/*/ | head -1)
-CKPT=$(basename $(ls $RUN/model_*.pt | sort -V | tail -1))
-echo "从 $RUN 的 $CKPT 继续"
-uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 \
-    --agent.load-checkpoint "$CKPT" --agent.resume True
-```
-
-参数说明:
-
-| 参数 | 作用 | 注意 |
-|---|---|---|
-| `--agent.resume True` | 声明"这是续训不是新训练":恢复网络权重、优化器状态和迭代计数 | 不加这个只加 load-checkpoint 是没用的 |
-| `--agent.load-checkpoint model_XXXX.pt` | 从哪个存档继续,**只写文件名**(如 `model_12000.pt`),不带目录 | 默认到本实验最新的 run 目录里找;想从旧 run 续,加 `--agent.load-run <run目录名>` |
-| `--env.scene.num-envs 1024` | 并行环境数,**要和原训练保持一致** | 改了数值上也能跑,但学习节奏会变,续训尽量不改 |
-| `--agent.run-name xxx`(可选) | 给续训段起个名字,方便在日志/TensorBoard 里区分 | 官方示例用 `--agent.run-name resume` |
-| `--agent.max-iterations N`(可选) | **再跑 N 轮**(不是"跑到第 N 轮"):续训时是从当前存档往后加 N | 本任务默认 50000。WSL 那次从 `model_12500` 续训,最后一个存档是 `model_62499`(12500 + 50000 − 1),正是这个语义。⚠️ 参数名是**连字符**(`--help` 里列的是 `--agent.max-iterations`);漏掉这个参数就会闷头跑满默认值,所以开跑后**第一眼看 `Learning iteration 0/N` 的分母对不对** |
-
-续训会新建一个 run 目录(时间戳命名),从加载的迭代数继续往上计——TensorBoard 里新旧曲线会分成两条 run,横轴迭代数是接上的。
-
-#### 训练中/训练后看效果:`uv run play`(3D 查看器)
-
-训练是 1024 个环境在 GPU 里无渲染地刷数据(开渲染会慢几个数量级),所以**训练本身看不到画面**;想直观看"鸭子现在学成什么样",用 `play` 指令——它加载一个 checkpoint,放几只鸭子进带 3D 画面的仿真里跑给你看。**纯观看,不训练**,训练不用停,另开一个 WSL 终端即可。
-
-复制即用(自动找最新 run 的最新 checkpoint):
-
-```bash
-cd ~/robolab/src/microduck_rl
-RUN=$(ls -td logs/rsl_rl/velocity/*/ | head -1)
-CKPT=$(ls $RUN/model_*.pt | sort -V | tail -1)
-echo "回放: $CKPT"
-WANDB_MODE=offline uv run play Mjlab-Velocity-Flat-MicroDuck \
-    --checkpoint-file "$CKPT" --num-envs 2 --viewer viser
-```
-
-然后 **Windows 浏览器打开 `http://localhost:8080`** 就能看到 3D 画面。看完在终端 **Ctrl+C 关掉**——play 和训练共用 6GB 显存,别让它一直挂着。
-
-说明:
-- `--checkpoint-file` 指定回放哪个存档;checkpoint 每 250 迭代存一个在 run 目录下(`model_5250.pt` = 第 5250 迭代),想看进化过程可以隔一两千迭代换新档看一次
-- `--num-envs 2` 只放 2 只鸭子,省显存
-- `--viewer viser` 用网页 3D 查看器(WSL 里没显示器,原生 MuJoCo 窗口开不了,必须用这个)
-- `WANDB_MODE=offline` 跳过 wandb 登录(play 默认想从 wandb 拉 run,本地文件回放用不到)
-- 换任务时把 `Mjlab-Velocity-Flat-MicroDuck` 和 `velocity` 目录名对应换掉(`uv run list-envs` 看任务列表)
-
-**Windows 上回放**(已实测;存档先从 WSL 复制过来,见上文「已有的训练履历」):
-
-```powershell
-$env:WANDB_MODE="offline"
-$uv = "$env:USERPROFILE\.local\bin\uv.exe"
-cd D:\robot\robolab\src\microduck_rl
-$RUN = "logs\rsl_rl\velocity\2026-09-16_09-07-17_velocity"
-& $uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_12500.pt" --num-envs 2 --viewer viser
-```
-
-Windows 上也要显式写 `--viewer viser`:网页查看器才有 **Rewards 标签页**(各奖励项实时条形图)和 **Checkpoints 标签页**(下拉框热切换同目录下的存档,不用重启),原生 MuJoCo 窗口没有存档切换。
-⚠️ `uv run` 启动前会先把环境同步到锁文件;终端停在一个转圈的包名(如 `⠧ cycler==0.12.1`)= 在下载依赖、网络卡住了,**不是 play 在跑**。先 `& $uv sync --dry-run` 看它想装什么;出现 viser 网址、浏览器能开 `localhost:8080` 才算启动成功。
-
-预期管理:5000 迭代左右还早(稳定步态要 4000–6000+),看到走得歪歪扭扭是正常进度。
-
-#### 训练结果导出与使用(把自己的策略装进 run_infer.ps1)
-
-训练产出两种文件,关系像"学员档案"和"驾照":
-
-- **`model_XXXX.pt`**(存档):PyTorch 格式,在 run 目录下每 250 迭代存一个。只有训练代码认识,用于 play 回放和续训,不用于部署。
-- **`policy.onnx`**(成品):开放行业标准格式,CPU 可跑、跨语言跨平台。官方 `policies/` 里那 9 个就是这种。训练的终点就是产出自己的 ONNX。
-
-对某个存档满意后,三步用起来(前两步在 WSL 终端):
-
-```bash
-# ① 导出 ONNX(必须用这个脚本——它把观测归一化参数烤进文件,漏了则策略部署即废,AGENTS.md 铁律)
-cd ~/robolab/src/microduck_rl
-RUN=$(ls -td logs/rsl_rl/velocity/*/ | head -1)
-CKPT=$(ls $RUN/model_*.pt | sort -V | tail -1)
-echo "导出: $CKPT"
-uv run scripts/export.py Mjlab-Velocity-Flat-MicroDuck \
-    --checkpoint-file "$CKPT" --onnx-file my_walking.onnx
-
-# ② 拷到 Windows 的策略目录
-cp my_walking.onnx /mnt/d/robot/robolab/policies/
-```
-
-③ 编辑 `run_infer.ps1`,把 `--walking` 行换成自己的文件:
-
-```powershell
---walking  "$P\my_walking.onnx" `
-```
-
-然后照常跑 `run_infer.ps1`——同一个 MuJoCo 窗口、同一套按键,只是走路的"本事"换成了自己训练的。改回官方文件即可对比效果。
+- WSL 开的 TensorBoard(6006)和 play 网页查看器(8080),Windows 浏览器直接开 `localhost:<端口>` 即可(mirrored 网络)。后台残留的 TensorBoard 用 `pkill -f tensorboard` 清。
+- wandb(云端,项目名 `mjlab_microduck`)功能更强但要注册;不用就设 `WANDB_MODE=offline`,不影响训练和 TensorBoard。
+- 训练本身不渲染画面(1024 个环境在 GPU 上无渲染刷数据),想看"学成什么样"只能用 play 另开一个进程;play 和训练共用 6 GB 显存,看完就关。
+- 预期管理:5000 迭代左右还早(稳定步态要 4000–6000+),看到走得歪歪扭扭是正常进度。
 
 对照实验:四个脚本对比"训练到底训练了什么"(建议按 0 → 1 → 2 → 官方的顺序看,先看最差的,后面的进步才有参照):
 
@@ -439,6 +306,7 @@ dnsTunneling=true
 
 ## 重要文档入口
 
+- `experiments/stage0_commands.md` — **所有日常命令**(训练、续训、回放、看曲线、导出、自带任务清单)
 - `AGENTS.md`(根目录) — 三处 clone(讨论沙箱 / Windows / WSL)的分工与同步约定;给 AI 助手看的操作规则
 - `src/microduck_rl/AGENTS.md` — 训练/奖励设计/sim2real 的经验手册(精华,必读)
 - `src/microduck_rl/README.md` — 任务列表、命令速查、发布流程
