@@ -239,11 +239,11 @@ WSL `~/robolab/src/microduck_rl/logs/rsl_rl/velocity/` 下:
 
 Windows 侧 `logs\rsl_rl\velocity\` 下另有 3 个 run(2026-09-18),最多到 `model_1750`,是验证 Windows 能否训练时留下的。
 
-存档要在 Windows 上回放,先从 WSL 整体复制到 Windows 的相同相对位置,命令见阶段 0 笔记第六节(`logs` 被 git 忽略,不会误提交)。
+存档要在 Windows 上回放,先从 WSL 整体复制到 Windows 的相同相对位置,命令见阶段 0 笔记第八节(`logs` 被 git 忽略,不会误提交)。
 
 #### 看曲线、续训、回放、导出
 
-命令和选项说明见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md) 第五至八节;回放和 TensorBoard 的面板怎么读见 [`experiments/stage1_checkpoint_behavior_map.md`](experiments/stage1_checkpoint_behavior_map.md)。
+命令和选项说明见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md) 第七至十节;回放和 TensorBoard 的面板怎么读见 [`experiments/stage1_checkpoint_behavior_map.md`](experiments/stage1_checkpoint_behavior_map.md)。
 
 几条环境事实(不重复命令):
 
@@ -324,6 +324,6 @@ dnsTunneling=true
 - [x] 建 GitHub 仓库 `tunghsingw/robolab`,三处(沙箱 / Windows `D:\robot\robolab` / WSL `~/robolab`)都改成它的 clone,文档与脚本走 git 同步
 - [x] Windows 原生训练打通并与 WSL 实测对比(1024 envs × 200 迭代:WSL 7:28 / Windows 7:56,差 6%),两边都能训练
 - [ ] 第一个自己训练的步态(从 `--env.scene.num-envs 1024` 起步)
-- [ ] 阶段 0 会用命令:命令笔记已建(`experiments/stage0_commands.md`),第十节练习待做
+- [ ] 阶段 0 会用命令:命令笔记已建(`experiments/stage0_commands.md`),第十二节 7 道练习待做(已完成 1、2)
 - [ ] 阶段 1 学会看:工具、面板、16 项奖励已认识;存档逐个对比和结业考试**未完成**(见 `experiments/stage1_checkpoint_behavior_map.md`)
 - [ ] 阶段 2 学会改:大纲已定(见 `experiments/stage2_reward_ablation.md`)

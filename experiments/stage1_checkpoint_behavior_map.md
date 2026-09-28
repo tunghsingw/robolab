@@ -30,7 +30,7 @@
 
 ## 一、启动命令
 
-命令的完整说明见 [`stage0_commands.md`](stage0_commands.md)(第一、六、七节)。这里只留阶段 1 天天用的两条,复制即用:
+命令的完整说明见 [`stage0_commands.md`](stage0_commands.md)(第二、八、九节)。这里只留阶段 1 天天用的两条,复制即用:
 
 ```powershell
 $env:WANDB_MODE="offline"; cd D:\robot\robolab\src\microduck_rl
