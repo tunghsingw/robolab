@@ -147,7 +147,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 
 Windows 侧(推理):
 
-- Python 3.12.6;`uv` 装在 `%USERPROFILE%\.local\bin\uv.exe`,**不在 PATH 里**
+- Python 3.12.6;`uv` 0.12.13 装在 `%USERPROFILE%\.local\bin\uv.exe`,**已在 PATH**,直接敲 `uv` 即可
 - `D:\robot\robolab\src\microduck_rl\.venv` 已通过 `uv sync` 建好(步骤见 `INSTALL.md`)
 - torch 已换成 **CUDA 版 `2.9.1+cu128`**:`pyproject.toml` 里给 `sys_platform == 'win32'` 加了 `pytorch-cu128` 索引(不加的话 Windows 上 PyPI 默认给 CPU 轮子 `2.9.1+cpu`,`cuda.is_available()==False`)。日常用法仍是根目录三个 `run_infer*.ps1`(ONNX 推理);torch 换 GPU 版之后,Windows 也能跑 `play` 回放(**已实测**,用 `--viewer viser` 网页查看器;命令见下文「`uv run play`」一节)
 
@@ -219,7 +219,7 @@ MuJoCo 窗口弹出、鸭子站好后按键控制。**已打补丁:MuJoCo 窗口
 
 **日常命令(训练、续训、回放、看曲线、导出)统一见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md)**,那里是命令的唯一权威出处(Windows 为主,附 WSL 写法)。
 
-本节只记环境事实:WSL 里 `uv` 直接可用;Windows 上 `uv.exe` 不在 PATH,要写全路径。已验证 torch 2.9.1+cu128 CUDA 可用,warp 1.12.0 认到 RTX 3060(sm_86);冒烟测试通过(所有惩罚项 ≤ 0,nan_state=0,1.33 s/iter)。一个能走的步态预计 4~8 小时;正式大 run 可加 `--hf-jobs` 扔 Hugging Face 云 GPU。
+本节只记环境事实:两侧都直接敲 `uv`(Windows 的 uv 已在 PATH)。已验证 torch 2.9.1+cu128 CUDA 可用,warp 1.12.0 认到 RTX 3060(sm_86);冒烟测试通过(所有惩罚项 ≤ 0,nan_state=0,1.33 s/iter)。一个能走的步态预计 4~8 小时;正式大 run 可加 `--hf-jobs` 扔 Hugging Face 云 GPU。
 
 ⚠️ **PowerShell 粘贴长命令会被截断**(实测 160 多个字符后的参数直接丢失,闷头按默认值跑)。命令要拆短、用变量;**每次开跑先看 `Learning iteration 0/N` 的分母**。
 

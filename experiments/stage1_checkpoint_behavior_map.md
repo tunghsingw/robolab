@@ -33,10 +33,10 @@
 命令的完整说明见 [`stage0_commands.md`](stage0_commands.md)(第一、六、七节)。这里只留阶段 1 天天用的两条,复制即用:
 
 ```powershell
-$env:WANDB_MODE="offline"; $uv = "$env:USERPROFILE\.local\bin\uv.exe"; cd D:\robot\robolab\src\microduck_rl
+$env:WANDB_MODE="offline"; cd D:\robot\robolab\src\microduck_rl
 $RUN = "logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity"
-& $uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_0.pt" --num-envs 2 --viewer viser   # 窗口一 → localhost:8080
-& $uv run tensorboard --logdir $RUN                                                                                # 窗口二 → localhost:6006
+uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_0.pt" --num-envs 2 --viewer viser   # 窗口一 → localhost:8080
+uv run tensorboard --logdir $RUN                                                                                # 窗口二 → localhost:6006
 ```
 
 ---

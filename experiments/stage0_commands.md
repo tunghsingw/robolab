@@ -8,21 +8,21 @@
 
 ---
 
-## 一、开工前的三行(每开一个 PowerShell 窗口先敲)
+## 一、开工前的两行(每开一个 PowerShell 窗口先敲)
 
 ```powershell
 $env:WANDB_MODE="offline"
-$uv = "$env:USERPROFILE\.local\bin\uv.exe"
 cd D:\robot\robolab\src\microduck_rl
 ```
 
 | 行 | 为什么 |
 |---|---|
 | `WANDB_MODE=offline` | 不登录 wandb(云端记录服务)。本地 TensorBoard 不受影响 |
-| `$uv = ...` | Windows 上 `uv` 不在 PATH 里,后面都写 `& $uv ...`(`&` = 执行变量里的程序) |
 | `cd ...\microduck_rl` | 所有命令都在这个目录下执行,`logs\` 也在这里 |
 
-WSL 对应:`wsl -d Ubuntu` 进入后 `cd ~/robolab/src/microduck_rl`,`uv` 直接可用,变量写法是 `RUN=...`、引用 `$RUN`。
+WSL 对应:`wsl -d Ubuntu` 进入后 `cd ~/robolab/src/microduck_rl`,变量写法是 `RUN=...`、引用 `$RUN`。
+
+**uv 与项目环境**:uv 是全机一份的工具(Windows 在 `%USERPROFILE%\.local\bin\uv.exe`,已在 PATH,版本 0.12.13);项目环境 `.venv` 是每个项目各一份(本项目在 `src\microduck_rl\.venv`)。`uv run` 从**当前目录**往上找 `pyproject.toml`,用那个项目的 `.venv`——所以**进对目录就用对环境**,这就是每次先 `cd` 的原因。测试 uv 是否可用用 `uv --version`;别敲 `uv v`(那是 `uv venv`,会在当前目录新建一个虚拟环境)。【换机器人也一样】
 
 ⚠️ **PowerShell 粘贴长命令会被截断**(实测 160 多字符后的参数直接丢失,程序照样按默认值跑,不报错)。所以:路径放进变量;**每次开跑先看 `Learning iteration 0/N` 的分母**。
 
@@ -31,8 +31,8 @@ WSL 对应:`wsl -d Ubuntu` 进入后 `cd ~/robolab/src/microduck_rl`,`uv` 直接
 ## 二、命令的通用结构
 
 ```
-& $uv run  train  Mjlab-Velocity-Flat-MicroDuck  --env.xxx ...   --agent.xxx ...
-  环境      做什么   哪个任务(任务 ID)            改环境配置      改算法/运行配置
+uv run  train  Mjlab-Velocity-Flat-MicroDuck  --env.xxx ...   --agent.xxx ...
+工具     做什么   哪个任务(任务 ID)            改环境配置      改算法/运行配置
 ```
 
 - **做什么**:`train` 训练、`play` 回放、`list-envs` 列任务、`tensorboard` 看曲线;导出是 `scripts/export.py`。
@@ -47,7 +47,7 @@ WSL 对应:`wsl -d Ubuntu` 进入后 `cd ~/robolab/src/microduck_rl`,`uv` 直接
 ### 列出所有任务
 
 ```powershell
-& $uv run list-envs
+uv run list-envs
 ```
 
 会列出 microduck 注册的全部任务,外加 mjlab 自带的演示任务(Unitree G1 人形、Go1 四足、倒立摆等)。以你的实际输出为准。
@@ -87,7 +87,7 @@ WSL 对应:`wsl -d Ubuntu` 进入后 `cd ~/robolab/src/microduck_rl`,`uv` 直接
 ### 冒烟测试(大 run 前必跑,上游铁律)
 
 ```powershell
-& $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 64 --agent.max-iterations 5
+uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 64 --agent.max-iterations 5
 ```
 
 64 个环境跑 5 轮,1 分钟内结束。通过标准:不报错;`Episode_Reward` 下惩罚项全 ≤ 0;`nan_state` 为 0。能拦下约 95% 的配置错误。
@@ -95,7 +95,7 @@ WSL 对应:`wsl -d Ubuntu` 进入后 `cd ~/robolab/src/microduck_rl`,`uv` 直接
 ### 正式训练
 
 ```powershell
-& $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.max-iterations 1000 --agent.run-name baseline
+uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.max-iterations 1000 --agent.run-name baseline
 ```
 
 ### 常用选项
@@ -125,7 +125,7 @@ WSL 对应:`wsl -d Ubuntu` 进入后 `cd ~/robolab/src/microduck_rl`,`uv` 直接
 
 `logs\rsl_rl\<日志目录>\<时间戳>_<run名>\`:`model_*.pt` 存档、`events.out.tfevents.*` 曲线数据、`params\` 当时的完整配置、`git\` 当时的代码版本。
 
-WSL 对应:去掉 `& $uv`,写 `uv run train ...`。
+WSL 写法完全相同。
 
 ---
 
@@ -134,7 +134,7 @@ WSL 对应:去掉 `& $uv`,写 `uv run train ...`。
 随时 **Ctrl+C** 中断,最多丢最近 250 轮。续训:
 
 ```powershell
-& $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.resume True --agent.load-run 2026-09-15_12-26-40_velocity --agent.load-checkpoint model_12500.pt --agent.max-iterations 1000
+uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.resume True --agent.load-run 2026-09-15_12-26-40_velocity --agent.load-checkpoint model_12500.pt --agent.max-iterations 1000
 ```
 
 | 选项 | 作用 | 注意 |
@@ -154,7 +154,7 @@ WSL 对应:去掉 `& $uv`,写 `uv run train ...`。
 ```powershell
 $RUN = "logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity"
 Test-Path "$RUN\model_0.pt"
-& $uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_0.pt" --num-envs 2 --viewer viser
+uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_0.pt" --num-envs 2 --viewer viser
 ```
 
 浏览器开 **`http://localhost:8080`**。看完 **Ctrl+C**(和训练共用显存)。
@@ -166,7 +166,7 @@ Test-Path "$RUN\model_0.pt"
 | `--viewer viser` | 网页查看器。**Windows 上也要写**:只有它有 Rewards(奖励条)和 Checkpoints(存档热切换)标签页 |
 | `--agent zero` / `--agent random` | 不加载存档,用"输出全零"/"随机输出"做对照 |
 
-**启动成功的标志**:终端出现 viser 网址、浏览器能打开 8080。终端停在转圈的包名(如 `⠧ cycler==0.12.1`)是 `uv run` 在同步依赖、网络卡住,**不是 play 在跑**:先 `& $uv sync --dry-run` 看它想装什么。
+**启动成功的标志**:终端出现 viser 网址、浏览器能打开 8080。终端停在转圈的包名(如 `⠧ cycler==0.12.1`)是 `uv run` 在同步依赖、网络卡住,**不是 play 在跑**:先 `uv sync --dry-run` 看它想装什么。
 面板怎么用见阶段 1 笔记第二节。
 
 存档在 WSL 训练的,先复制到 Windows(WSL 里执行一次即可,`-n` 不覆盖):
@@ -182,7 +182,7 @@ cp -rn logs/rsl_rl /mnt/d/robot/robolab/src/microduck_rl/logs/
 ## 七、看曲线 `tensorboard`
 
 ```powershell
-& $uv run tensorboard --logdir logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity
+uv run tensorboard --logdir logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity
 ```
 
 浏览器开 **`http://localhost:6006`**。`--logdir` 指单个 run = 只看它;指 `logs\rsl_rl\velocity` = 该任务所有 run 叠在一起(对比实验用)。
@@ -194,7 +194,7 @@ cp -rn logs/rsl_rl /mnt/d/robot/robolab/src/microduck_rl/logs/
 
 ```powershell
 $RUN = "logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity"
-& $uv run scripts/export.py Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_12500.pt" --onnx-file ..\..\policies\my_walking_12500.onnx
+uv run scripts/export.py Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_12500.pt" --onnx-file ..\..\policies\my_walking_12500.onnx
 ```
 
 - **必须用这个脚本导出**:它把观测归一化参数烤进 ONNX,手工转换的文件在仿真里看不出问题、上真机即废(上游铁律)。

@@ -32,7 +32,7 @@
 - **方法一(推荐):命令行覆盖,不改文件。** 格式 `--env.rewards.<项名>.weight <值>`,项名里的下划线写成连字符或下划线都行(已用锁定版本 tyro 1.0.5 验证)。例:
 
   ```powershell
-  & $uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.max-iterations 1000 --agent.run-name e1_airtime0 --env.rewards.air-time.weight 0.0
+  uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.max-iterations 1000 --agent.run-name e1_airtime0 --env.rewards.air-time.weight 0.0
   ```
 
   **验证是否生效**:训练开头打印的 `Active Reward Terms` 表里,该项的 Weight 一栏应显示新值。不对立刻 Ctrl+C。命令太长会被 PowerShell 截断,见 README。
