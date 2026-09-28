@@ -155,7 +155,7 @@ uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.res
 | 选项 | 作用 | 注意 |
 |---|---|---|
 | `--agent.resume True` | 声明续训:恢复权重、优化器状态、迭代计数、课程进度 | 不加它,只加 load-checkpoint 没用 |
-| `--agent.load-run <run目录名>` | 从哪个 run 续 | 不写 = 该任务最新的 run |
+| `--agent.load-run <run目录名>` | 从哪个 run 续 | **只写目录名**(如 `2026-09-28_23-10-05_sitstand_try`),不写路径;程序只在**该任务自己的日志目录**里找(SitStand 就是 `logs\rsl_rl\microduck_sitstand\`)。不写 = 该任务最新的 run |
 | `--agent.load-checkpoint model_X.pt` | 从哪个存档续,**只写文件名** | |
 | `--agent.max-iterations N` | **再跑 N 轮** | 例:从 12500 续 50000 轮,最后一个存档是 `model_62499` |
 | `--env.scene.num-envs` | **与原训练一致** | |
@@ -173,6 +173,14 @@ uv run play Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\model_0.pt" --
 ```
 
 浏览器开 **`http://localhost:8080`**。看完 **Ctrl+C**(和训练共用显存)。
+
+不加载存档、看"没训练过"的样子(对照用),**去掉 `--checkpoint-file`**,换成 `--agent random` 或 `--agent zero`:
+
+```powershell
+uv run play Mjlab-SitStand-Flat-MicroDuck --agent random --num-envs 2 --viewer viser
+```
+
+`random` = 每步输出随机动作(抽搐乱动);`zero` = 输出恒为 0(僵在默认姿势)。这两种模式下查看器没有 Checkpoints 标签页。
 
 | 选项 | 作用 |
 |---|---|
@@ -234,8 +242,10 @@ uv run scripts/export.py Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\m
 
 ## 十、练习(做完即阶段 0 完成)
 
-1. 用 `list-envs` 找到 SitStand 任务的平地版 ID。
-2. 对它跑一次冒烟测试,记下开头 `Active Reward Terms` 表里有几项奖励、日志落在哪个目录。
-3. 写出它训练 1000 轮、run 名为 `sitstand_try` 的命令(不必真跑完,看到分母是 1000 就 Ctrl+C)。
-4. 用 `--agent random` 回放它,看一只"随机策略"的鸭子在这个任务里是什么样。
-5. 假设第 3 步那个 run 跑到了 `model_500.pt`,写出从它续训 500 轮的命令。
+每题后面是需要看的章节。
+
+1. 用 `list-envs` 找到 SitStand 任务的平地版 ID。(第三节)
+2. 对它跑一次冒烟测试,记下开头 `Active Reward Terms` 表里有几项奖励、日志落在哪个目录、是否通过。(第三、四节)
+3. 写出它训练 1000 轮、run 名为 `sitstand_try` 的命令(不必真跑完,看到分母是 1000 就 Ctrl+C)。(第四节)
+4. 用 `--agent random` 回放它,看一只"随机策略"的鸭子在这个任务里是什么样。(第六节)
+5. 假设第 3 步那个 run 跑到了 `model_500.pt`,写出从它续训 500 轮的命令。(第四节"产物在哪"看目录名怎么来,第五节)
