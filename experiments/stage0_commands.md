@@ -61,12 +61,13 @@ cd D:\robot\robolab\src\microduck_rl
 
 - **变量**:`$RUN = "logs\rsl_rl\..."` 把一段长路径存进变量,后面写 `"$RUN\model_0.pt"` 就会展开成完整路径。
 - **检查文件在不在**:`Test-Path "$RUN\model_0.pt"`,输出 `True` 表示存在,`False` 表示路径写错了或文件没有。
+- **长参数放进数组**:`$a = @("--agent.resume","True","--agent.max-iterations","250")` 把一串参数存进数组;命令末尾写 `@a`,会逐项展开接在后面。每行都短,不怕截断(下一小节)。第七节续训就用到它。
 
 ### ⚠️ PowerShell 会截断长命令
 
 粘贴超过 160 多个字符的命令时,后面的参数会被**悄悄丢掉**,程序照样按默认值跑,不报错。应对:
 
-1. 长路径放进变量,让命令变短。
+1. 长路径放进变量、长参数放进数组,让每一行都变短。
 2. 训练开跑后第一眼看终端的 `Learning iteration 0/N`,**分母 N 是不是你要的轮数**(第六节)。不对立刻 Ctrl+C。
 
 **WSL 的差别**:先 `wsl -d Ubuntu` 进入,再 `cd ~/robolab/src/microduck_rl`。WSL 里不用设 WANDB 也行(想设就 `export WANDB_MODE=offline`);变量写法是 `RUN=logs/rsl_rl/...`(等号两边不能有空格),引用写 `$RUN`;路径分隔符用 `/`。
@@ -310,8 +311,12 @@ Start-Sleep 10; "model_15000.pt 已存好,可以停了"; [console]::beep(1000,80
 从某个存档接着训练:
 
 ```powershell
-uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 --agent.resume True --agent.load-run 2026-09-15_12-26-40_velocity --agent.load-checkpoint model_12500.pt --agent.max-iterations 1000
+$R = "2026-09-15_12-26-40_velocity"
+$a = @("--agent.resume","True","--agent.load-run",$R,"--agent.load-checkpoint","model_12500.pt","--agent.max-iterations","1000")
+uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 @a
 ```
+
+续训命令很长,所以参数放进数组 `$a`(第二节)。开跑后第一行应显示 `Learning iteration <起点>/<起点+轮数>`,这里是 `12500/13500`;分母不对就 Ctrl+C。
 
 | 选项 | 作用 | 注意 |
 |---|---|---|
