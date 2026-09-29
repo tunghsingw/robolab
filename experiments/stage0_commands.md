@@ -6,13 +6,13 @@
 
 **完成标准**:做完第十二节的 7 道练习。每道题只用到本文件前面的内容,题后标了对应章节。
 
-**怎么读**:从头往后读,前一节是后一节的基础。命令以 **Windows PowerShell** 为主;WSL 的差别在每节末尾单独说明。
+**怎么读**:从头往后读,前一节是后一节的基础。命令以 **Windows PowerShell** 为主;和 WSL 有差别的节,在节末单独说明。没写就是两边相同(只是路径分隔符 `\` 换成 `/`)。
 
 本文件是本项目**所有命令的唯一出处**,README 和其它阶段的笔记只链接到这里。
 
 ---
 
-## 一、先认识五个东西
+## 一、先认识几个基本概念
 
 整个流程是一条流水线:
 
@@ -46,7 +46,7 @@ cd D:\robot\robolab\src\microduck_rl
 
 | 行 | 为什么 |
 |---|---|
-| `$env:WANDB_MODE="offline"` | wandb 是一个云端记录服务,要注册登录。设成 offline 就不连它,本地的 TensorBoard 照常可用。只对当前窗口有效 |
+| `$env:WANDB_MODE="offline"` | wandb 是一个云端记录服务,要注册登录。设成 offline 就不连它,本地的曲线面板照常可用。只对当前窗口有效 |
 | `cd ...\microduck_rl` | 后面所有命令都在这个目录下执行。训练产物也写在这里的 `logs\` 下 |
 
 ### uv 和项目环境
@@ -57,7 +57,7 @@ cd D:\robot\robolab\src\microduck_rl
 - 想确认 uv 可用,敲 `uv --version`。**别敲 `uv v`**,那是 `uv venv` 的简写,会在当前目录新建一个虚拟环境。
 - `uv run` 每次执行前会先检查环境是否和项目锁定的版本一致,不一致就下载补齐。**终端停在一个转圈的包名上**(如 `⠧ cycler==0.12.1`)= 正在下载依赖、网络卡住了,不是你的命令在跑。这时 Ctrl+C,敲 `uv sync --dry-run` 看它想装什么。
 
-### 两个 PowerShell 小技巧
+### 三个 PowerShell 小技巧
 
 - **变量**:`$RUN = "logs\rsl_rl\..."` 把一段长路径存进变量,后面写 `"$RUN\model_0.pt"` 就会展开成完整路径。
 - **检查文件在不在**:`Test-Path "$RUN\model_0.pt"`,输出 `True` 表示存在,`False` 表示路径写错了或文件没有。
@@ -70,7 +70,7 @@ cd D:\robot\robolab\src\microduck_rl
 1. 长路径放进变量、长参数放进数组,让每一行都变短。
 2. 训练开跑后第一眼看终端的 `Learning iteration 0/N`,**分母 N 是不是你要的轮数**(第六节)。不对立刻 Ctrl+C。
 
-**WSL 的差别**:先 `wsl -d Ubuntu` 进入,再 `cd ~/robolab/src/microduck_rl`。WSL 里不用设 WANDB 也行(想设就 `export WANDB_MODE=offline`);变量写法是 `RUN=logs/rsl_rl/...`(等号两边不能有空格),引用写 `$RUN`;路径分隔符用 `/`。
+**WSL 的差别**:先 `wsl -d Ubuntu` 进入,再 `cd ~/robolab/src/microduck_rl`。WSL 里同样要设,写法是 `export WANDB_MODE=offline`;变量写法是 `RUN=logs/rsl_rl/...`(等号两边不能有空格),引用写 `$RUN`;路径分隔符用 `/`。
 
 ---
 
@@ -81,7 +81,7 @@ uv run  train  Mjlab-Velocity-Flat-MicroDuck  --env.xxx ...   --agent.xxx ...
 工具     做什么   哪个任务(任务 ID)            改环境配置      改算法/运行配置
 ```
 
-- **做什么**:`train` 训练、`play` 回放、`list-envs` 列任务、`tensorboard` 看曲线。导出是运行一个脚本 `scripts/export.py`,位置也写在这里。
+- **做什么**:`train` 训练、`play` 回放、`list-envs` 列任务、`tensorboard` 看曲线。导出不是 `uv run` 后面的命令名,而是运行一个脚本:`uv run scripts/export.py ...`(第十节)。
 - **任务 ID**:第四节讲。
 - **选项**:
   - `--env.` 开头的改**环境配置**:机器人、奖励、并行环境数等。
@@ -290,7 +290,7 @@ logs\rsl_rl\<日志目录>\<开始时间>_<run名>\
 | 文件 | 是什么 |
 |---|---|
 | `model_0.pt`、`model_250.pt`… | 存档 |
-| `events.out.tfevents.*` | 曲线数据,TensorBoard 读它 |
+| `events.out.tfevents.*` | 曲线数据,曲线面板读它 |
 | `params\` | 这次训练的完整配置 |
 | `git\` | 这次训练时的代码版本 |
 
@@ -313,11 +313,33 @@ logs\rsl_rl\<日志目录>\<开始时间>_<run名>\
 所以想停时,**等终端刚过一个 250 的整数倍轮次**(刚存完档)再按,损失最小。
 没跑满 `max-iterations` 不影响存档的可用性:存档好不好看回放行为,不看训练有没有跑满。
 
+### 续训
+
+从某个存档接着训练:
+
+```powershell
+$R = "2026-09-15_12-26-40_velocity"
+$a = @("--agent.resume","True","--agent.load-run",$R,"--agent.load-checkpoint","model_12500.pt","--agent.max-iterations","1000")
+uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 @a
+```
+
+续训命令很长,所以参数放进数组 `$a`(第二节)。开跑后第一行的分子是起点轮数。分母应是"起点 + 轮数",这里是 `12500/13500`——这一点是从存档编号推断的(从 12500 续 50000 轮,最后一个存档是 `model_62499`),**第一次从非零存档续训时核对一下**。分母明显不对(如仍是 50000)就 Ctrl+C。
+
+| 选项 | 作用 | 注意 |
+|---|---|---|
+| `--agent.resume True` | 声明这是续训:恢复网络权重、优化器状态、轮数计数、课程学习进度 | 必须写,只写下面两项没用 |
+| `--agent.load-run <run目录名>` | 从哪个 run 续 | **只写目录名**,不写路径。程序只在该任务自己的日志目录里找。不写 = 该任务最新的 run |
+| `--agent.load-checkpoint <文件名>` | 从哪个存档续 | **只写文件名**,如 `model_12500.pt` |
+| `--agent.max-iterations N` | **再跑 N 轮** | 例:从 12500 续 1000 轮,存档编号接着往上走 |
+| `--env.scene.num-envs` | 和原训练保持一致 | |
+
+续训会新建一个 run 目录,轮数从加载的存档接着往上计。
+
 ### 训练已经在跑,想让它停在某个轮次
 
 运行中的训练**改不了** `max-iterations`(只在启动时读一次)。办法是等目标轮次的存档写好再按 Ctrl+C,效果和一开始就设成那个轮数相同。目标轮次要是 250 的整数倍(那一轮才会存档)。
 
-另开一个 PowerShell 窗口,运行下面的等待命令(把路径和轮数换成自己的):
+另开一个 PowerShell 窗口,运行下面的等待命令(把路径和轮数换成自己的)。新窗口没有 `cd`,所以这里写完整路径:
 
 ```powershell
 $RUN = "D:\robot\robolab\src\microduck_rl\logs\rsl_rl\velocity\<run目录名>"
@@ -330,7 +352,7 @@ Start-Sleep 10; "model_15000.pt 已存好,可以停了"; [console]::beep(1000,80
 - 听到后回训练窗口按 Ctrl+C。
 - 确认存档完整:`Get-Item "$RUN\model_15000.pt" | Select-Object Name, Length`,大小应和前一个存档接近(本项目约 4.7 MB)。
 
-**另一种做法:停掉,再带上限续训。** 等下一个存档写好后 Ctrl+C,再按下面"续训"的写法从这个存档续,`--agent.max-iterations` 设成"目标轮数 − 存档轮数"。训练跑到上限会自己停。
+**另一种做法:停掉,再带上限续训。** 等下一个存档写好后 Ctrl+C,再按上面"续训"的写法从这个存档续,`--agent.max-iterations` 设成"目标轮数 − 存档轮数"。训练跑到上限会自己停。
 
 | | 等到目标存档再停 | 停掉再带上限续训 |
 |---|---|---|
@@ -341,28 +363,6 @@ Start-Sleep 10; "model_15000.pt 已存好,可以停了"; [console]::beep(1000,80
 | 要不要守着 | 要,到点手动按 | 不用 |
 
 **怎么选:离目标只差几分钟就等着;离目标还有几个小时、又不想守着,就停掉重设上限。**
-
-### 续训
-
-从某个存档接着训练:
-
-```powershell
-$R = "2026-09-15_12-26-40_velocity"
-$a = @("--agent.resume","True","--agent.load-run",$R,"--agent.load-checkpoint","model_12500.pt","--agent.max-iterations","1000")
-uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-envs 1024 @a
-```
-
-续训命令很长,所以参数放进数组 `$a`(第二节)。开跑后第一行应显示 `Learning iteration <起点>/<起点+轮数>`,这里是 `12500/13500`;分母不对就 Ctrl+C。
-
-| 选项 | 作用 | 注意 |
-|---|---|---|
-| `--agent.resume True` | 声明这是续训:恢复网络权重、优化器状态、轮数计数、课程学习进度 | 必须写,只写下面两项没用 |
-| `--agent.load-run <run目录名>` | 从哪个 run 续 | **只写目录名**,不写路径。程序只在该任务自己的日志目录里找。不写 = 该任务最新的 run |
-| `--agent.load-checkpoint <文件名>` | 从哪个存档续 | **只写文件名**,如 `model_12500.pt` |
-| `--agent.max-iterations N` | **再跑 N 轮** | 例:从 12500 续 1000 轮,存档编号接着往上走 |
-| `--env.scene.num-envs` | 和原训练保持一致 | |
-
-续训会新建一个 run 目录,轮数从加载的存档接着往上计。
 
 ---
 
@@ -473,9 +473,11 @@ uv run scripts/export.py Mjlab-Velocity-Flat-MicroDuck --checkpoint-file "$RUN\m
 
 | 情况 | 做法 |
 |---|---|
-| 训练、回放、TensorBoard 要停 | 各自终端按 Ctrl+C |
+| 训练、回放、曲线面板要停 | 各自终端按 Ctrl+C |
 | 显存不够、训练变慢 | 先关回放;`nvidia-smi` 看谁占着显卡 |
 | 临时改过 `src\` 里的代码做实验 | `git -C D:\robot\robolab\src\microduck_rl checkout .` 还原 |
+| 练习、冒烟测试留下的 run 目录不想要了 | 删掉整个 run 目录即可,例:`Remove-Item -Recurse -Force logs\rsl_rl\microduck_sitstand\<run目录名>`。删之前确认没有要留的存档 |
+| 练习导出的 `.onnx` 不想要了 | `Remove-Item ..\..\policies\<文件名>.onnx`;没 `git add` 过的文件删了就干净了 |
 
 ---
 
