@@ -30,7 +30,7 @@
 | **存档 checkpoint** | 训练中途保存的网络权重,文件名 `model_<轮数>.pt`,**每 250 轮存一个**。每个存档都是独立完整的快照 |
 | **run 目录** | 一次训练的所有产物放在一个目录里:存档、曲线数据、当时的配置 |
 | **回放 play** | 加载一个存档,在带 3D 画面的仿真里跑给你看。只看不学 |
-| **曲线 TensorBoard** | 把训练时每一轮记下的分数画成曲线,在浏览器里看 |
+| **曲线面板 TensorBoard** | 把训练时每一轮记下的分数画成曲线,在浏览器里看。它没有官方中文名(字面是"张量看板",tensor = 张量),本项目统一叫**曲线面板** |
 | **导出 export** | 把 `.pt` 存档转成 `.onnx` 文件。`.pt` 只有训练代码认识;`.onnx` 是部署用的通用格式,CPU 能跑,真机加载的就是它 |
 
 ---
@@ -384,7 +384,7 @@ cp -rn logs/rsl_rl /mnt/d/robot/robolab/src/microduck_rl/logs/
 
 ---
 
-## 九、看曲线 TensorBoard
+## 九、看曲线:曲线面板 TensorBoard
 
 ```powershell
 uv run tensorboard --logdir logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity
