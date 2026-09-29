@@ -404,7 +404,7 @@ uv run play Mjlab-Velocity-Flat-MicroDuck --agent random --num-envs 2 --viewer v
 - **Checkpoints(存档)**:下拉框里列出同一 run 目录下的所有存档,选一个就立刻换上,不用重启。用 `random` / `zero` 模式时没有这个标签页。
 - **Rewards(奖励)**:每项奖励的实时条形图,绿色加分、红色扣分。
 
-每个面板怎么用于判读,是阶段 1 的内容(`stage1_checkpoint_behavior_map.md`)。
+每个面板怎么用于判读,是阶段 1 的内容(`stage1_observe.md` 第二节)。
 
 ### 存档在 WSL,想在 Windows 回放
 
@@ -432,7 +432,7 @@ uv run tensorboard --logdir logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity
 - 它只读曲线数据文件,不跑仿真。训练进行中也能开着看,刷新页面就更新。
 - 停止:终端 Ctrl+C。
 
-曲线分组和读法见阶段 1 笔记第三节。
+曲线分组和读法见阶段 1(`stage1_observe.md` 第三节)。
 
 ---
 

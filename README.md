@@ -243,7 +243,7 @@ Windows 侧 `logs\rsl_rl\velocity\` 下另有 3 个 run(2026-09-18),最多到 `m
 
 #### 看曲线、续训、回放、导出
 
-命令和选项说明见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md) 第七至十节;回放和 TensorBoard 的面板怎么读见 [`experiments/stage1_checkpoint_behavior_map.md`](experiments/stage1_checkpoint_behavior_map.md)。
+命令和选项说明见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md) 第七至十节;回放和曲线面板怎么读见 [`experiments/stage1_observe.md`](experiments/stage1_observe.md)。
 
 几条环境事实(不重复命令):
 
@@ -325,5 +325,5 @@ dnsTunneling=true
 - [x] Windows 原生训练打通并与 WSL 实测对比(1024 envs × 200 迭代:WSL 7:28 / Windows 7:56,差 6%),两边都能训练
 - [ ] 第一个自己训练的步态(从 `--env.scene.num-envs 1024` 起步)
 - [x] 阶段 0 会用命令:`experiments/stage0_commands.md` 第十二节 7 道练习已做完
-- [ ] 阶段 1 学会看:工具、面板、16 项奖励已认识;存档逐个对比和结业考试**未完成**(见 `experiments/stage1_checkpoint_behavior_map.md`)
+- [ ] 阶段 1 学会看:课程 `experiments/stage1_observe.md`,记录本 `experiments/stage1_checkpoint_behavior_map.md`;练习 1–6 进行中
 - [ ] 阶段 2 学会改:大纲已定(见 `experiments/stage2_reward_ablation.md`)
