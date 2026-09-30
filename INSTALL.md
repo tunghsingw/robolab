@@ -132,10 +132,10 @@ uv run python -c "from huggingface_hub import snapshot_download; snapshot_downlo
 ⚠️ **下载完必须做这一步**:
 
 ```powershell
-cd D:\robot\robolab ; git checkout policies/.gitattributes
+cd D:\robot\robolab ; git checkout policies/.gitattributes policies/README.md
 ```
 
-Hugging Face 的 `.gitattributes` 声明 `*.onnx` 走 Git LFS,会覆盖本仓库的同名文件。不还原的话,你以后提交的自训 ONNX 会被静默存成 130 字节的 LFS 指针,clone 下来是坏的——**这个故障没有任何报错**。`git status` 看到该文件被修改就是这个原因。
+下载会带来 Hugging Face 自己的 `.gitattributes` 和 `README.md`,覆盖本仓库 `policies\` 下的同名文件。README 只是说明文件,`.gitattributes` 则有实际后果:它声明 `*.onnx` 走 Git LFS。不还原的话,你以后提交的自训 ONNX 会被静默存成 130 字节的 LFS 指针,clone 下来是坏的——**这个故障没有任何报错**。`git status` 看到该文件被修改就是这个原因。
 
 ### 2.7 验证
 
@@ -289,7 +289,8 @@ WANDB_MODE=offline uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-en
 | MuJoCo 窗口里按键没反应 | 补丁 01 没打(缺 `key_callback`) | 回 2.4 |
 | 训练不停,`Learning iteration N/50000` | `--agent.max-iterations` 没生效 | 注意是**连字符**不是下划线;另见下一行 |
 | 参数莫名丢失、命令像被截断 | **PowerShell 粘贴长命令会被截断**(约 160 字符) | 拆成多行、或先把路径存进变量 |
-| 自训 ONNX 变成 130 字节文本 | HF 的 `.gitattributes` 覆盖了本仓库的 | `git checkout policies/.gitattributes`,见 2.6 |
+| 自训 ONNX 变成 130 字节文本 | HF 的 `.gitattributes` 覆盖了本仓库的 | `git checkout policies/.gitattributes policies/README.md`,见 2.6 |
+| 从 Git Bash 调 `wsl.exe`,报 `No such file or directory` 且带 Git 安装路径前缀,或循环变量神秘变空 | MSYS 路径转换把 `/mnt/d/...`、URL 等参数改坏了 | 命令前加 `MSYS_NO_PATHCONV=1`;复杂命令写成 `.sh` 放 `D:\wsl\`,再 `wsl -d Ubuntu -- bash /mnt/d/wsl/xxx.sh` |
 | 改了 `.ps1` 后中文乱码、报奇怪的 CommandNotFound | 存成了无 BOM 的 UTF-8 | 含中文的 `.ps1` **必须存 UTF-8 带 BOM** |
 | 移动了工作区目录后 venv 失效 | uv 生成的入口 exe 内嵌绝对路径 | 删掉 `.venv` 重新 `uv sync` |
 | 训练显存不足(OOM) | 环境数太多 | 6 GB 显存从 `--env.scene.num-envs 1024` 起步,别用 4096 |

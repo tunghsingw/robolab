@@ -17,7 +17,7 @@
 ### 第 1 步:建立对照组(baseline)
 
 - 实验组和对照组**只差一个变量**:代码版本、环境数量、随机种子、训练轮数全部相同。【换机器人也一样】
-- 候选:现成的 `2026-09-15_12-26-40_velocity`,前提是它的 `params\env.yaml` 里 `num_envs: 1024`,且 `git\microduck_rl.diff` 的 commit 与 `upstream.repos` 锁定的一致。对不上就新训一个 baseline。
+- 候选:现成的 `2026-09-15_12-26-40_velocity`,前提是它的 `params\env.yaml` 里 `num_envs: 1024`,且 `git\microduck_rl.diff` 的 commit 与 `upstream.repos` 锁定的一致。对不上就新训一个 baseline。存档清单见 `runs.md`。
 - 每个实验跑 **1000 轮**(Windows 约 40 分钟)。依据:回合长度在 250–500 轮之间跳升,步态质量相关的课程在 1500 轮前加码;1000 轮能看清"站 → 走"阶段的差别。
 
 ### 第 2 步:量噪声带

@@ -1,23 +1,21 @@
 # Microduck 具身智能学习笔记
 
-> 目的:记录环境现状和学习路线,避免每次会话从头摸索。只写"现在是什么样",不记变更日期。
+> **现状:阶段 0 已完成;阶段 1「学会看」进行中,下一步做 `experiments/stage1_observe.md` 第六节的练习 1。**
 
-## 学习目标
+这份文件回答三个问题:**我在学什么、学到哪了、日常怎么操作。**
+从零搭环境看 [`INSTALL.md`](INSTALL.md);每条命令怎么用看 [`experiments/stage0_commands.md`](experiments/stage0_commands.md);给 AI 助手的规则看 [`AGENTS.md`](AGENTS.md)。
+
+## 一、学习目标
 
 **用 microduck 入门具身智能,目标是掌握可迁移的技术理解,为以后给第三方设备做训练做准备。**
 microduck 是教具不是终点——重点是"换一台机器人时这套方法怎么用",不是读懂这个仓库的源码。
 
 本人无具身智能基础,**实践优先**:先动手跑、看现象,再回头理解原理。
 
-**全新机器从零搭建 → [`INSTALL.md`](INSTALL.md)**(不依赖任何现有文件,照着做即可)。
-
 两个共用的基线文件,和本文档一起看:
 
 - **[`GLOSSARY.md`](GLOSSARY.md)** —— 技术名词中英对照 + 中文解释。看不懂某个词先查它。
-- **[`REFERENCES.md`](REFERENCES.md)** —— 外部资料清单,每条注明"它能回答什么"。
-
-⚠️ 规矩:**领域常识(技术分类、现状、缩写全称、论文结论)不许凭记忆答,先查 `REFERENCES.md`,查不到就联网核实。**
-这条是踩坑立的——本文档最初那版"两条技术栈"的分类就是凭记忆写的,三处硬伤,核实后才改对(详见 `AGENTS.md` 第二节第 7 条)。
+- **[`REFERENCES.md`](REFERENCES.md)** —— 外部资料清单,每条注明"它能回答什么"。领域常识一律以它为准,不凭记忆。
 
 ### 这个领域的地图
 
@@ -63,265 +61,116 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 **难题没消失,只是从『设计控制器』搬到了『设计奖励 + 把仿真做准』。** 这就是为什么本项目的经验手册
 (`src/microduck_rl/AGENTS.md`)九成篇幅在讲奖励和物理对齐,网络结构一句话带过(四层 MLP,约 20 万参数)。
 
-### 实践路线(阶段 0 + 四阶段)
+三个核心词的关系:**模拟是场地,训练是学,推理是用。** 模拟 = MuJoCo 算出来的假物理世界;训练 = 几千只假鸭子在里面试错,把"会走路"压成一个 `policy.onnx`;推理 = 拿这个文件照本执行,喂假鸭子是验货,喂真鸭子是上岗。从验货到上岗那道坎叫 **sim2real**,本项目一半功夫(BAM 舵机模型、域随机化)都在缩小它。
 
-| 阶段 | 练什么 | 产出 | 碰代码吗 |
-|---|---|---|---|
-| **0. 会用命令** | 训练、回放、看曲线、续训、导出的命令语法;怎么指定自带任务 | 能独立跑完一整套(`experiments/stage0_commands.md`) | 否 |
-| **1. 学会看** | 回放不同 checkpoint 看行为演化,同时对着 TensorBoard(曲线面板)找对应指标 | 「数字 ↔ 行为」映射表 | 否 |
-| **2. 学会改** | 奖励消融:一次只改一项权重,跑 1000 轮看变化 | 自己的实验记录表 | 改一个数字 |
-| **3. 学会定义任务** | 挑个没训过的任务(SitStand / BallKick)走完整闭环 | 独立完成"定义→训练→部署" | 读配置 |
-| **4. 换机器人** | URDF 导出、执行器辨识 | —— | 以后再说 |
+本仓库两个上游的分工:`src/microduck/` 是真机机载运行时(Rust,50 Hz 控制回路,加载 ONNX);`src/microduck_rl/` 是训练(Python,MuJoCo Warp + PPO,18 个基础任务,另有 15 个齿隙变体)。策略共享 61 维观测契约(48 本体感知 + 13 指令),输入 `[1,61]` → 输出 `[1,14]` 舵机目标。
+
+## 二、实践路线(阶段 0 + 四阶段)
+
+| 阶段 | 练什么 | 产出 | 碰代码吗 | 文件 |
+|---|---|---|---|---|
+| **0. 会用命令** | 训练、回放、看曲线、续训、导出的命令;怎么指定自带任务 | 能独立跑完一整套 | 否 | `experiments/stage0_commands.md` |
+| **1. 学会看** | 回放不同存档看行为,对着曲线面板找对应指标 | 「数字 ↔ 行为」映射表 | 否 | `experiments/stage1_observe.md`(课程)、`stage1_checkpoint_behavior_map.md`(记录本) |
+| **2. 学会改** | 奖励消融:一次只改一项权重,跑 1000 轮看变化 | 自己的实验记录表 | 改一个数字 | `experiments/stage2_reward_ablation.md`(大纲) |
+| **3. 学会定义任务** | 挑个没训过的任务(SitStand / BallKick)走完整闭环 | 独立完成"定义→训练→部署" | 读配置 | 待建 |
+| **4. 换机器人** | URDF 导出、执行器辨识 | —— | 以后再说 | 待建 |
 
 适合这套方法的第三方设备:**有 CAD 模型、执行器可建模、任务是运动控制类**(走、平衡、简单动作)。
 不适合的:需要精细操作或视觉语义理解的——那要走模仿学习那一支,得先有真机采数据,是另一套工程。
 四个阶段走完再往外扩,下一站就是它。
 
-阶段 1 用哪些存档、怎么看,见 `experiments/stage1_observe.md`。
+训练过的存档清单见 [`experiments/runs.md`](experiments/runs.md)。
 
-### 早先的阶段目标(已完成)
+## 三、怎么和 AI 一起学
 
-先本机 CPU 推理 → 再本机 GPU 训练。两步都已打通。
+- **一个阶段开一个新对话。** 开场白写:"学习阶段 N。先读 experiments/stageN 的课程和记录本,遵守 AGENTS.md。我从练习 X 开始。" AI 会自动加载前面所有阶段的课程,只引用不重讲。
+- **阶段内的练习和讨论留在同一个对话里。** 练习答案发给 AI,批改后由 AI 记进该阶段的记录本并提交。
+- **AI 改仓库文件前会先列方案,你说"同意"再改。** 例外只有:你已明确指定的改动、记录本、名词表和资料库的新增条目、进度打勾。
+- **卡住时 AI 会指回前面阶段的某一节**,让你回看,而不是在当前对话里另讲一遍。
+- **阶段结束**:AI 更新本文件的「进度记录」和顶部的现状行并推送,你在另一台机器 `git pull`。
 
-## 运行环境:Windows 11 + WSL2(实际跑命令的地方)
+## 四、环境一览(已核实)
 
-**本项目的实际运行环境是 Windows 11 主机 + 其上的 WSL2(Ubuntu 24.04)**,不是纯 Windows,也不是一台独立的 Linux 机器。两边各管一摊,下文代码块的语言标签标明该命令在哪边敲:`powershell` = Windows,`bash` = WSL。
+| 项 | 值 |
+|---|---|
+| 机器 | Windows 11,RTX 3060 Laptop **6 GB 显存**,驱动 610.60。6 GB 决定了训练从 1024 环境起步,别开 4096 |
+| Windows 侧 | 仓库 `D:\robot\robolab\`;Python 3.12.6;uv 0.12.13(已在 PATH);torch 2.9.1+cu128(靠补丁 02 的 cu128 索引);warp 1.12.0 |
+| WSL 侧 | Ubuntu 24.04(rootfs 导入到 `D:/wsl/Ubuntu`,用户 `robot`,免密 sudo);仓库 `~/robolab/`(**必须在 WSL 自己的文件系统,不能放 `/mnt/d`**);torch 2.9.1+cu128;warp 1.12.0 |
+| 两侧分工 | **日常在 Windows**:训练、回放、曲线面板、导出、推理。WSL 同样能训练和回放(1024 环境:WSL 2.24 s/轮,Windows 2.38 s/轮,差 6%),以后的 duck-sim 只能在 WSL |
+| 网络 | WSL 已切 mirrored 模式:Windows 的本机代理(127.0.0.1:7890)在 WSL 可用;WSL 里开的网页(8080、6006)Windows 浏览器直接开 `localhost:<端口>` |
+| 第三处 | 讨论沙箱:AI 助手在一台独立 Ubuntu 上读代码、写文档,不跑真实负载。三处都是 `github.com/tunghsingw/robolab` 的 clone,分工与同步见 `AGENTS.md` |
 
-| 环境 | 负责什么 | 仓库位置 | 怎么进 |
-|---|---|---|---|
-| **Windows 11 原生**(PowerShell) | 推理:`run_infer*.ps1`,弹原生 MuJoCo 窗口看鸭子;**GPU 训练也能跑**(已实测) | `D:\robot\robolab\` | 开 PowerShell |
-| **WSL2 Ubuntu 24.04** | 训练主力、`play` 回放、导出 ONNX、TensorBoard;以后的 duck-sim 全栈模拟只能在这 | `~/robolab/`(WSL 自己的文件系统,**不是** `/mnt/d`) | PowerShell 里 `wsl -d Ubuntu` |
+## 五、日常操作:推理脚本
 
-**两边训练速度实测基本相同**(同机同卡、torch 2.9.1+cu128、warp 1.12.0、seed 42、1024 envs × 200 迭代):WSL **7:28**(2.24 s/iter)vs Windows **7:56**(2.38 s/iter),差 6%,在散热波动范围内。所以选哪边不看速度,看别的:
-
-| | Windows 原生 | WSL2 |
-|---|---|---|
-| 看画面 | 原生 MuJoCo 窗口能开,但没有奖励条和存档切换,日常 `play` 仍用 viser 网页查看器 | 只能开网页查看器 |
-| 文件搬运 | 训练/导出/推理同一个盘,`policies\` 直接可用 | 导出的 onnx 要拷过 `/mnt/d` |
-| 上游支持 | 自己补的(`pyproject.toml` 加了 win32 的 cu128 索引),出怪问题没人兜底,`git pull` 还可能冲突 | 官方支持的路线 |
-| duck-sim | 跑不了(Rust + Linux) | 只能在这 |
-
-⚠️ 基准测试要用**真实规模**:64 envs 下测出"Windows 慢 35%"是假象(小批量时开销占主导),1024 envs 才是真实工况。
-
-要点:
-
-- 发行版名就叫 `Ubuntu`(rootfs 导入在 `D:/wsl/Ubuntu`),默认用户 `robot`,免密 sudo
-- 两边(加上讨论沙箱一共三处)都是 **`github.com/tunghsingw/robolab` 的 clone**,目录结构完全相同。
-  文档、脚本、自训 ONNX 走 `git pull` 同步;上游代码各自 `vcs import` 拉;`.venv` 和 `logs/` 各管各的。
-  急着传单个文件也可以走 `/mnt/d/robot/robolab/...`(WSL 里直接访问 D 盘)
-- 仓库放在 WSL 内部而不是 `/mnt/d` 是故意的:跨文件系统 I/O 慢好几倍
-- WSL 里没有显示器,原生 MuJoCo 窗口开不了 → 在 WSL 中一律用网页查看器(`play` 的 viser、TensorBoard),Windows 浏览器开 `localhost:<端口>`(已切 mirrored 网络模式,端口互通)
-- GPU 两边都直接可用(RTX 3060 Laptop):WSL 和 Windows 的 venv 里都是 torch `2.9.1+cu128` + warp 1.12.0,都认得到 sm_86
-- 从 Git Bash 调 `wsl.exe` 要加 `MSYS_NO_PATHCONV=1`,否则路径参数会被改坏(详见下文)
-- 另有第三处**讨论沙箱**(一台独立的 Ubuntu,AI 助手在那儿读代码、写文档和脚本,**不跑任何真实负载**)。它够不到这台机器,但同样是本仓库的 clone,文档和脚本走 git 同步——三处的分工与同步约定见根目录 `AGENTS.md`
-
-## 两个仓库的分工
-
-| 目录 | 是什么 | 技术栈 |
-|---|---|---|
-| `src/microduck/` | 真机机载运行时("大脑"):守护进程、50 Hz 控制回路、加载 ONNX 策略 | Rust |
-| `src/microduck_rl/` | 策略训练("学校"):MuJoCo Warp + PPO,**18 个基础任务**(另有 15 个齿隙变体),导出 ONNX | Python (uv 管理) |
-
-关键概念:训练 = 4096 只仿真鸭子试错学新动作(吃 GPU);推理 = 拿训练好的 `policy.onnx` 照本执行(CPU 就够)。策略共享 61 维观测契约(48 本体感知 + 13 指令),输入 `[1,61]` → 输出 `[1,14]` 舵机目标。
-
-## 三个核心词汇的关系
-
-- **模拟(仿真)**:MuJoCo 算出来的假物理世界,练功房。存在意义 = 真机试错太贵,假鸭子摔一百万次零成本。
-- **训练**:在模拟里让几千只假鸭子试错,对了加分错了扣分,把"会走路"压缩成一个 policy.onnx 文件(= 策略)。训练离不开模拟。
-- **推理**:拿 policy.onnx 照本执行,每秒 50 次输入状态→输出 14 舵机目标,不学习纯执行。推理不挑场地:喂假鸭子 = 现在玩的,喂真鸭子 = 机器人上岗。
-
-```
-模拟(场地) → ①训练 → policy.onnx(本事) → ②推理@模拟(验货,现在这步) → ③推理@真机(上岗)
-```
-
-一句话:**模拟是场地,训练是学,推理是用**。②→③那道坎叫 **sim2real**(模拟到现实的差距),本项目一半功夫(BAM 舵机模型、域随机化)都在缩小它。
-
-## 本机环境现状(已核实)
-
-硬件(两个环境共用同一台机器):
-
-- Windows 11,RTX 3060 Laptop **6GB 显存**,驱动 610.60
-
-Windows 侧(推理):
-
-- Python 3.12.6;`uv` 0.12.13 装在 `%USERPROFILE%\.local\bin\uv.exe`,**已在 PATH**,直接敲 `uv` 即可
-- `D:\robot\robolab\src\microduck_rl\.venv` 已通过 `uv sync` 建好(步骤见 `INSTALL.md`)
-- torch 已换成 **CUDA 版 `2.9.1+cu128`**:`pyproject.toml` 里给 `sys_platform == 'win32'` 加了 `pytorch-cu128` 索引(不加的话 Windows 上 PyPI 默认给 CPU 轮子 `2.9.1+cpu`,`cuda.is_available()==False`)。日常用法仍是根目录三个 `run_infer*.ps1`(ONNX 推理);torch 换 GPU 版之后,Windows 也能跑 `play` 回放(**已实测**,用 `--viewer viser` 网页查看器;命令见 `experiments/stage0_commands.md` 第八节)
-
-WSL 侧(训练):
-
-- WSL2 **Ubuntu 24.04 已装好**(rootfs 导入到 `D:/wsl/Ubuntu`,搭建过程见第二步),`~/robolab/src/microduck_rl` 下 `uv sync` 完成
-- torch `2.9.1+cu128`,CUDA 可用;warp 1.12.0 认到 RTX 3060(sm_86)
-- 网络已切 mirrored 模式,Windows 系统代理(127.0.0.1:7890)在 WSL 内可用(详见「WSL 使用本机系统代理」)
-
-## 路线规划
-
-### 第一步:CPU 推理 ✅ 已搭好
-
-**日常使用:在 PowerShell 里跑一条命令即可**
+训练、回放、看曲线、续训、导出的命令全部在 `experiments/stage0_commands.md`。本节只讲根目录的推理脚本。
 
 ```powershell
 D:\robot\robolab\run_infer.ps1
 ```
 
-MuJoCo 窗口弹出、鸭子站好后按键控制。**已打补丁:MuJoCo 窗口和终端里按键都有效**(在窗口里按字母键会顺带触发 MuJoCo 自带的显示开关,画面样式可能变化,无伤大雅;想干净就在终端里按)。
+MuJoCo 窗口弹出、鸭子站好后按键控制。MuJoCo 窗口和终端里按键都有效(补丁 01);在窗口里按字母键会顺带触发 MuJoCo 自带的显示开关,想画面干净就在终端里按。
 
 | 按键 | 作用(注意:速度是"一步到位"不是逐渐加减) |
 |---|---|
-| ↑ | 前进(直接给最大前进速度) |
-| ↓ | 后退(直接给最大后退速度) |
-| ← / → | 左/右横移(螃蟹步,不是转弯!) |
-| A / E | 左转 / 右转(转弯用这个) |
+| ↑ / ↓ | 前进 / 后退(直接给最大速度) |
+| ← / → | 左 / 右横移(螃蟹步,不是转弯) |
+| A / E | 左转 / 右转 |
 | 空格 | 停(速度清零,自动切回站立策略) |
 | Y | 坐下 ↔ 站起 |
 | R | 前滚翻 |
 | P | 随机推一把(测抗扰) |
-| T | 暂停/恢复策略推理 |
+| T | 暂停 / 恢复策略推理 |
 | B / H | 切到身体姿态 / 头部控制模式(方向键含义随之改变,再按一次退出) |
 | Q | 退出 |
 
-**在 MuJoCo 窗口里按其它字母键会触发查看器自带的可视化调试开关**——只改显示、不影响物理和策略,**再按一次同一键即恢复**。已实测对照(MuJoCo 3.10 官方快捷键表,`mujoco.mjVISSTRING/mjRNDSTRING`):
+MuJoCo 窗口里其它字母键是查看器自带的可视化开关,只改显示、不影响物理和策略,再按一次恢复(MuJoCo 3.10 官方快捷键表):
 
 | 键 | 功能 | 现象 |
 |---|---|---|
-| W | Wireframe 线框渲染 | 地面/物体变线条 |
-| T | Transparent 透明化 | 鸭子变透明(⚠️ T 同时也是"暂停策略推理"键,两个功能都会触发) |
-| A | Auto Connect 关节连线 | 部件间出现蓝色连线 |
-| S | Shadow 阴影 | 场景变暗 |
-| D | Static Body 静态物体显隐 | 地板消失(地板是静态物体) |
-| F | Contact Force 接触力箭头 | 接触处长出力箭头(躺地时头上也有) |
-| G | Fog 雾效 | 顶部/远处变暗 |
-| X | Texture 纹理开关 | 变平面亮色,像过曝 |
-| C | Contact Point 接触点 | 接触处黄色标记 |
-| N | Island 约束孤岛着色 | 整鸭变黄 |
-| H / J / M / I | 凸包 / 关节轴 / 重心 / 惯量 | 学习物理仿真时挺有用,可玩 |
+| W | 线框渲染 | 地面/物体变线条 |
+| T | 透明化 | 鸭子变透明(⚠️ T 同时也是"暂停策略推理"键,两个功能都会触发) |
+| A | 关节连线 | 部件间出现蓝色连线 |
+| S | 阴影 | 场景变暗 |
+| D | 静态物体显隐 | 地板消失 |
+| F | 接触力箭头 | 接触处长出力箭头 |
+| G | 雾效 | 顶部/远处变暗 |
+| X | 纹理开关 | 变平面亮色 |
+| C | 接触点 | 接触处黄色标记 |
+| N | 约束孤岛着色 | 整鸭变黄 |
+| H / J / M / I | 凸包 / 关节轴 / 重心 / 惯量 | 学习物理仿真时可玩 |
 
-想画面干净就只在**终端**里按控制键(终端按键不经过 MuJoCo 窗口,不会误触这些开关)。
-
-#### 当时的搭建步骤(已完成,重装才需要)
-
-1. `uv sync` 建好 `src\microduck_rl\.venv`(CPU 版 torch 即可满足推理)
-2. 下载官方策略到 `D:\robot\robolab\policies\`(9 个 onnx:走路/站立/坐站/捡地/踢球 ×2/翻滚/轮滑 ×2,外加 manifest.json 等):
-   ```powershell
-   # 直连 HF 被墙且本机代理(127.0.0.1:7890)常不在线 → 用国内镜像并绕过代理
-   $env:HF_ENDPOINT="https://hf-mirror.com"; $env:NO_PROXY="*"; $env:HTTP_PROXY=""; $env:HTTPS_PROXY=""
-   & "D:\robot\robolab\src\microduck_rl\.venv\Scripts\python.exe" -c "from huggingface_hub import snapshot_download; snapshot_download('pollen-robotics/microduck-policies', local_dir=r'D:\robot\robolab\policies')"
-   ```
-3. **给 `scripts/infer_policy.py` 打了 Windows 补丁**(两处):① 原脚本用 Linux 专用 `termios` 读键盘,Windows 崩 → `termios` 导入失败时回退 `msvcrt`;② 原脚本只收终端按键、MuJoCo 窗口按键无效(窗口还常抢焦点,导致"按键没反应") → 给 viewer 加了 `key_callback`,窗口内按键同样生效。补丁在本地仓库,`git diff` 可查。⚠️ 若 `git pull` 覆盖该文件需重打(症状:`No module named 'termios'` 或窗口按键无效)
-4. 验证通过:standing 策略下鸭子稳定站立(trunk_z≈116mm),4 个策略均加载,输入 `[1,61]` → 输出 `[1,14]`
-
-⚠️ **写 .ps1 脚本的坑**:Windows PowerShell 5.1 会把无 BOM 的 UTF-8 当 ANSI 读,中文变乱码。根目录曾叫"具身智能"(已改名为 robot,路径不再含中文),当时就是中文路径乱码导致 `Set-Location` 静默失败。现有脚本的注释/输出仍含中文,所有含中文的 `.ps1` 仍必须存成 **UTF-8 带 BOM**(报错特征:`无法加载模块".venv"`之类的莫名 CommandNotFound)。
-
-### 第二步:本机训练 ✅ 已搭好(WSL2 Ubuntu 24.04)
-
-**日常命令(训练、续训、回放、看曲线、导出)统一见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md)**,那里是命令的唯一权威出处(Windows 为主,附 WSL 写法)。
-
-本节只记环境事实:两侧都直接敲 `uv`(Windows 的 uv 已在 PATH)。已验证 torch 2.9.1+cu128 CUDA 可用,warp 1.12.0 认到 RTX 3060(sm_86);冒烟测试通过(所有惩罚项 ≤ 0,nan_state=0,1.33 s/iter)。一个能走的步态预计 4~8 小时;正式大 run 可加 `--hf-jobs` 扔 Hugging Face 云 GPU。
-
-⚠️ **PowerShell 粘贴长命令会被截断**(实测 160 多个字符后的参数直接丢失,闷头按默认值跑)。命令要拆短、用变量;**每次开跑先看 `Learning iteration 0/N` 的分母**。
-
-#### 已有的训练履历(阶段 1 的素材)
-
-训练存档(`logs\rsl_rl\velocity\` 下;WSL 的 run 已整体复制到 Windows 同一相对位置):
-
-| run 目录 | 存档 | 是什么 |
-|---|---|---|
-| `2026-09-15_11-53-46` / `12-01-54` / `12-10-04` | `model_4`(各 2 个) | 冒烟测试 |
-| `2026-09-15_12-01-14` | 0 个 | 起了就停 |
-| `2026-09-15_12-26-40` | `model_12500`(51 个) | 第一次正式训练,到 12500 |
-| `2026-09-16_09-07-17` | **`model_62499`(201 个)** | 从 12500 续训,再跑满 50000 |
-| `2026-09-28_21-50-30`(Windows) | 到 `model_15000` 左右 | Windows 上从 0 重新训练一次,配置同上;阶段 1 结业考试用 |
-
-所以"6 万多轮" = 12500 + 50000 两段拼起来:第二段从 12500 开始,每 250 存一个到 62250(200 个),训练结束再存一个 `model_62499`(最后一轮的编号 = 12500 + 50000 − 1),共 201 个。
-第二段停在 62499 是因为 `--agent.max-iterations` 默认 50000 跑满了。
-
-Windows 侧另有:`velocity\` 下 3 个 2026-09-18 的 run(最多到 `model_1750`,验证 Windows 能否训练时留下的);`microduck_sitstand\` 下阶段 0 练习留下的冒烟测试和 `sitstand_try`,可删。
-
-存档要在 Windows 上回放,先从 WSL 整体复制到 Windows 的相同相对位置,命令见阶段 0 笔记第八节(`logs` 被 git 忽略,不会误提交)。
-
-#### 看曲线、续训、回放、导出
-
-命令和选项说明见 [`experiments/stage0_commands.md`](experiments/stage0_commands.md) 第七至十节;回放和曲线面板怎么读见 [`experiments/stage1_observe.md`](experiments/stage1_observe.md)。
-
-几条环境事实(不重复命令):
-
-- WSL 开的 TensorBoard(6006)和 play 网页查看器(8080),Windows 浏览器直接开 `localhost:<端口>` 即可(mirrored 网络)。后台残留的 TensorBoard 用 `pkill -f tensorboard` 清。
-- wandb(云端,项目名 `mjlab_microduck`)功能更强但要注册;不用就设 `WANDB_MODE=offline`,不影响训练和 TensorBoard。
-- 训练本身不渲染画面(1024 个环境在 GPU 上无渲染刷数据),想看"学成什么样"只能用 play 另开一个进程;play 和训练共用 6 GB 显存,看完就关。
-- 预期管理:5000 迭代左右还早(稳定步态要 4000–6000+),看到走得歪歪扭扭是正常进度。
-
-对照实验:四个脚本对比"训练到底训练了什么"(建议按 0 → 1 → 2 → 官方的顺序看,先看最差的,后面的进步才有参照):
+四个脚本对比"训练到底训练了什么"(建议按 0 → 1 → 2 → 官方的顺序看,先看最差的,后面的进步才有参照):
 
 | 脚本 | 跑的策略 | 现象 |
 |---|---|---|
 | `run_infer0.ps1` | **未训练基准**(默认 random;`.\run_infer0.ps1 zero` 切 zero 模式) | random = 随机初始网络,触电式抽搐瘫倒;zero = 输出恒 0,僵在默认姿势 |
-| `run_infer1.ps1` | 自训早期版 `my_walking.onnx` | 来源存疑,见下 |
-| `run_infer2.ps1` | 自训最终版 `2026-09-16_09-07-17_velocity.onnx` | 文件内嵌 `model_62499.pt` 标记,**确认是 62499 迭代的成果** |
+| `run_infer1.ps1` | 自训早期版 `my_walking.onnx` | 来源存疑,见 `policies/README.md` |
+| `run_infer2.ps1` | 自训最终版 `2026-09-16_09-07-17_velocity.onnx`(62499 轮) | 自己训出来的走路 |
 | `run_infer.ps1` | 官方训练好的策略 | 正常听指挥走路 |
 
-⚠️ `my_walking.onnx` **查不出是哪个 checkpoint 导出的**(文件里没留标记,不像 `2026-09-16_09-07-17_velocity.onnx`
-内嵌了 `model_62499.pt`),推测来自 12500 那次 run,未证实。
-**以后导出一律把迭代数写进文件名**(`my_walking_62499.onnx`),否则过两轮就分不清哪个是哪个。
+把自己导出的 ONNX 装进脚本的方法见阶段 0 第十节;策略文件清单见 `policies/README.md`。
 
-基准文件的来历(重装才需要):`export.py` 的 `--agent random/zero` 导出路径有上游 bug(`runner` 未定义),实际做法是——`untrained_random.onnx` 用正常导出路径导 `model_0.pt`(第 0 迭代存档 = 训练的真实起点);`untrained_zero.onnx` 是把它的输出层权重清零制成(onnx 库改图,验证输出恒 0)。两个文件在 `policies\` 下。
+以后可选:`uv run publish` 把策略发布到 Hugging Face;真机通过 `robotctl policy add` 加载同一个 ONNX;`src/microduck/scripts/duck-sim` 全栈模拟(Rust,只能在 WSL)。
 
-以后可选:`uv run publish` 把策略发布到 Hugging Face(像官方那 9 个那样);真机通过 `robotctl policy add` 加载同一个 ONNX——仿真和真机用的是同一张"驾照",这就是 sim2real。
+## 六、文档入口
 
-#### 当时的搭建步骤(已完成,重装才需要)
-
-1. 商店版 Ubuntu 26.04 注册失败(`0x80071772`,WSL 2.2.4 太旧且 `wsl --update` 被网络/权限挡住)→ 改用 **rootfs 导入**:从 USTC 镜像下载 Ubuntu 24.04 WSL rootfs 到 `D:/wsl/`,`wsl --import Ubuntu D:/wsl/Ubuntu <rootfs.tar.gz> --version 2`
-2. 建默认用户 robot(`/etc/wsl.conf` 设 `default=robot` + `systemd=true`),apt 换 USTC 源
-3. 在 **WSL 自己的文件系统**里 `git clone` 本仓库到 `~/robolab`,再 `vcs import src < upstream.repos` 拉上游(不能放 `/mnt/d`,跨文件系统 I/O 慢好几倍)
-4. GitHub 在 WSL 里直连不通(bam 是 git 依赖)→ git 全局 URL 重写走代理:`git config --global url."https://gh-proxy.com/https://github.com/".insteadOf "https://github.com/"`(uv 调系统 git,所以对 uv 生效且不用改 uv.lock)
-5. `UV_HTTP_TIMEOUT=600 uv sync` —— Linux x86_64 上 PyPI 的 torch 轮子自带 CUDA(nvidia-* 依赖),不用像 Windows 那样换索引
-
-#### WSL 使用本机系统代理
-
-本机系统代理挂在 `127.0.0.1:7890`。WSL 默认 NAT 网络模式下 WSL 里的 127.0.0.1 是它自己,够不着 Windows 的代理(每次调 wsl 都弹的"检测到 localhost 代理配置,但未镜像到 WSL"警告就是在说这个)。已在 `%USERPROFILE%\.wslconfig` 切换到 **mirrored 镜像网络**:
-
-```ini
-[wsl2]
-networkingMode=mirrored   # WSL 与 Windows 共享网络栈,localhost 代理可用
-autoProxy=true            # 自动把 Windows 系统代理注入 WSL 环境变量(http_proxy 等)
-dnsTunneling=true
-```
-
-改完 `wsl --shutdown` 重启生效。已验证:代理在线时 WSL 里 GitHub、HuggingFace 均可直连;`http_proxy`/`https_proxy`/`no_proxy` 随 Windows 代理设置自动同步,代理关掉时这些变量也会消失。
-
-由此形成两层网络容错,**不需要手动切换**:
-- 代理在线 → 一切直连(走 autoProxy 注入的代理)
-- 代理离线 → git 走 gh-proxy.com 重写(上面第 4 步,仍然保留),pip/apt 走 USTC 源,HF 走 hf-mirror
-
-镜像模式的额外好处:Windows 和 WSL 互通 localhost——以后在 WSL 里开 tensorboard / viser 查看器,Windows 浏览器直接访问 `localhost:<端口>` 就行;wandb 也可以在线记录了(之前冒烟测试用的 `WANDB_MODE=offline` 不再是必须)。
-
-⚠️ **从 Git Bash 调 `wsl.exe` 的坑**:MSYS 路径转换会把 `/mnt/d/...`、URL 等参数改坏(症状:`No such file or directory` 带 Git 安装路径前缀、循环变量神秘变空)。加 `MSYS_NO_PATHCONV=1` 前缀,复杂命令写成 `.sh` 脚本放 `D:/wsl/` 再 `wsl -d Ubuntu -- bash /mnt/d/wsl/xxx.sh`。(AI 助手在独立 Ubuntu 沙箱里工作,够不到 `wsl.exe`,这条只在你自己用 Git Bash 时适用。)
-
-### 以后可选:duck-sim 全栈模拟(WSL2 已就绪)
-
-主仓库 `scripts/duck-sim`:真机的全套 Rust 守护进程 + MuJoCo 身体,用 `robotctl` 像操作真鸭子一样操作,用于学习机载软件架构。
-
-## 重要文档入口
+新机器或新读者的阅读顺序:`INSTALL.md` → 本文件 → `experiments/stage0_commands.md` → `experiments/stage1_observe.md` → 之后各阶段。
 
 - `experiments/stage0_commands.md` — **所有日常命令**(训练、续训、回放、看曲线、导出、自带任务清单)
 - `experiments/stage1_observe.md` / `experiments/stage1_checkpoint_behavior_map.md` — 阶段 1 课程 / 记录本
 - `experiments/stage2_reward_ablation.md` — 阶段 2 大纲
-- `AGENTS.md`(根目录) — 三处 clone(讨论沙箱 / Windows / WSL)的分工与同步约定;给 AI 助手看的操作规则和分阶段学习规则
-- `src/microduck_rl/AGENTS.md` — 训练/奖励设计/sim2real 的经验手册(精华,必读)
-- `src/microduck_rl/README.md` — 任务列表、命令速查、发布流程
-- `src/microduck/docs/robot/simulation.md` — duck-sim 用法
-- `src/microduck/docs/design/architecture.md` — 机载系统架构
+- `experiments/runs.md` — 训练存档清单
+- `policies/README.md` — 策略文件清单
+- `AGENTS.md` — 三处 clone 的分工与同步约定;给 AI 助手的操作规则和分阶段学习规则
+- `INSTALL.md` — 从零搭建;故障速查
+- `src/microduck_rl/AGENTS.md` — 上游作者的训练 / 奖励设计 / sim2real 经验手册(精华,必读)
+- `src/microduck_rl/README.md` — 上游任务列表、命令速查、发布流程
+- `src/microduck/docs/robot/simulation.md` / `docs/design/architecture.md` — duck-sim 用法 / 机载系统架构
 
-## 进度记录
+## 七、进度记录
 
-- [x] clone 两仓库;`uv sync` 完成(但 torch 为 CPU 版);了解项目结构与训练/推理区别
-- [x] 跑通 CPU 推理:官方策略已下载到 `policies\`,infer_policy.py 打了 Windows 键盘补丁,`run_infer.ps1` 一键启动
-- [x] 根目录由"具身智能"改名为 robot(后又改为 robolab):`.venv` 因 uv 入口 exe 内嵌旧绝对路径而失效,删掉重新 `uv sync` 才恢复;脚本后来改用 `$PSScriptRoot`,不再受目录改名影响
-- [x] 训练环境就绪:WSL2 Ubuntu 24.04(rootfs 导入到 `D:/wsl/Ubuntu`),仓库在 WSL 内 `~/robolab/src/microduck_rl`,torch 2.9.1+cu128 CUDA 可用
-- [x] 冒烟测试通过(64 envs × 5 iters,惩罚项全 ≤ 0,nan_state=0,1.33s/iter)
-- [x] WSL 网络切换 mirrored 模式(`.wslconfig`),本机系统代理(127.0.0.1:7890)在 WSL 内可用,GitHub/HF 可直连;gh-proxy/USTC/hf-mirror 作为代理离线时的兜底
-- [x] 建 GitHub 仓库 `tunghsingw/robolab`,三处(沙箱 / Windows `D:\robot\robolab` / WSL `~/robolab`)都改成它的 clone,文档与脚本走 git 同步
-- [x] Windows 原生训练打通并与 WSL 实测对比(1024 envs × 200 迭代:WSL 7:28 / Windows 7:56,差 6%),两边都能训练
+- [x] 环境搭建完成:Windows 推理、Windows 与 WSL 训练、网络、GitHub 仓库三处 clone(过程与坑见 `INSTALL.md`)
 - [x] 第一个自己训练的步态:WSL `2026-09-15_12-26-40`(0 → 12500 轮)+ 续训 `2026-09-16_09-07-17`(→ 62499);Windows 从 0 再训一次 `2026-09-28_21-50-30`(→ 15000 轮左右)
 - [x] 阶段 0 会用命令:`experiments/stage0_commands.md` 第十二节 7 道练习已做完
-- [ ] 阶段 1 学会看:课程 `experiments/stage1_observe.md`,记录本 `experiments/stage1_checkpoint_behavior_map.md`;练习 1–6 进行中
-- [ ] 阶段 2 学会改:大纲已定(见 `experiments/stage2_reward_ablation.md`)
+- [ ] 阶段 1 学会看:课程 `experiments/stage1_observe.md`,记录本 `experiments/stage1_checkpoint_behavior_map.md`;练习 1–6 待做
+- [ ] 阶段 2 学会改:大纲已定(`experiments/stage2_reward_ablation.md`),开课前按写作规则重写

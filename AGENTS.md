@@ -14,6 +14,8 @@
 | **Windows 11 原生**(PowerShell) | `D:\robot\robolab\` | **当前日常主力**:训练、回放、曲线面板(TensorBoard)、导出、推理(`run_infer*.ps1`)都在这边做,阶段课程里的命令以它为准 |
 | **WSL2 Ubuntu 24.04**(用户 `robot`) | `~/robolab/` | 同样能训练、回放、导出(速度与 Windows 相差 6%);以后的 duck-sim 只能在这。早期训练的存档在这边,已整体复制到 Windows |
 
+硬件、版本号、路径等环境事实只在 `README.md`「环境一览」记一份,本文件不重复。
+
 **仓库内的相对路径三处一模一样**,所以 agent 说 `src/microduck_rl/scripts/export.py`,
 三处都能直接对号入座,不需要换算——只有写成命令给用户时才要补上对应的根。
 
@@ -128,7 +130,7 @@ microduck 是教具不是终点。
 | 文档、脚本、`upstream.repos`、`.gitignore`、`patches/`、自训 ONNX、`experiments/` | **git**。沙箱改完 push,真机 `git pull` |
 | `src/` 下的上游代码 | **各自 `vcs import` + `git apply`**。清单钉死 commit,所以三处必然一致 |
 | `.venv/` | **各自 `uv sync`**。平台相关,且 uv 入口内嵌绝对路径,搬过去必失效 |
-| `logs/`(训练输出) | **不走 git**(上 G)。要在另一侧回放时手工整体复制,方法见 `experiments/stage0_commands.md` 第八节 |
+| `logs/`(训练输出) | **不走 git**(上 G)。要在另一侧回放时手工整体复制,方法见 `experiments/stage0_commands.md` 第八节;有哪些 run 记在 `experiments/runs.md` |
 
 **XFTP 只剩一个用途**:把真机上未纳入 git 的临时东西(训练日志片段、临时改过的文件)拉给 agent 看。
 需要时再拉,不必常备镜像。
@@ -153,12 +155,13 @@ microduck 是教具不是终点。
 | 文件 | 读者 | 内容 | 谁是权威 |
 |---|---|---|---|
 | `INSTALL.md` | 人 | **从零搭建步骤**,不依赖现有文件 | 安装流程 |
-| `README.md` | 人 | 学习笔记:目标、领域地图、实践路线、环境现状、按键表、**进度记录** | 学习目标与**各阶段完成状态** |
+| `README.md` | 人 | 学习目标与领域地图、实践路线、怎么和 AI 一起学、**环境一览**、推理脚本操作、**进度记录** | 学习目标、环境事实、**各阶段完成状态** |
 | `AGENTS.md`(本文件) | AI agent | 环境分工、路径换算、同步约定、行为约束、分阶段学习规则 | **三处环境与同步规则、教学与写作规则** |
 | `GLOSSARY.md` | **人 + agent 共用** | 技术名词:中英对照、简称全称、一句话中文解释 | **名词定义** |
 | `REFERENCES.md` | **人 + agent 共用** | 外部资料清单,每条注明"它能回答什么" | **外部信息出处** |
 | `CLAUDE.md` | Claude Code | 只有一行 `@AGENTS.md` | 无(纯指针) |
 | `experiments/stage*_*.md` | 人 + agent | 各阶段的课程与记录本,见第五节 | 各阶段学习内容;**所有命令以 `stage0_commands.md` 为准** |
+| `experiments/runs.md`、`policies/README.md` | 人 + agent | 训练存档清单 / ONNX 策略清单 | 有哪些存档、哪些策略、各自来源 |
 
 `GLOSSARY.md` 和 `REFERENCES.md` 是**双方共同查看的认知基线**——统一词汇、统一信息来源,
 也是用户的学习基础。两个文件都只增不删(条目错了就改正并更新核实标记,不要删掉)。
@@ -175,15 +178,17 @@ microduck 是教具不是终点。
 
 ### 阶段与文件
 
-| 阶段 | 核心目标 | 课程(学什么) | 记录本(用户的观察与结论) |
-|---|---|---|---|
-| 0 会用命令 | 独立完成"选任务 → 冒烟 → 训练 → 续训 → 回放 → 看曲线 → 导出" | `experiments/stage0_commands.md` | 无(练习结果直接在对话里核对) |
-| 1 学会看 | 对陌生存档说出"主要问题是 X,对应指标是 Y" | `experiments/stage1_observe.md` | `experiments/stage1_checkpoint_behavior_map.md` |
-| 2 学会改 | 改一个奖励权重前能预测方向,训练后能判断变化是否超出随机波动 | `experiments/stage2_reward_ablation.md`(目前是大纲,开课前按下面的写作规则重写) | 重写时拆出 `experiments/stage2_ablation_records.md` |
-| 3 学会定义任务 | 挑一个没训过的自带任务走完"定义 → 训练 → 部署" | 待建 | 待建 |
-| 4 换机器人 | URDF 导出、执行器辨识 | 待建 | 待建 |
+各阶段练什么、产出什么,见 `README.md`「实践路线」;是否完成,以 `README.md`「进度记录」为准。本表只管文件。
 
-各阶段是否完成,以 `README.md`「进度记录」为准。
+| 阶段 | 课程(学什么) | 记录本(用户的观察与结论) |
+|---|---|---|
+| 0 会用命令 | `experiments/stage0_commands.md` | 无(练习结果直接在对话里核对) |
+| 1 学会看 | `experiments/stage1_observe.md` | `experiments/stage1_checkpoint_behavior_map.md` |
+| 2 学会改 | `experiments/stage2_reward_ablation.md`(目前是大纲,开课前按下面的写作规则重写) | 重写时拆出 `experiments/stage2_ablation_records.md` |
+| 3 学会定义任务 | 待建 | 待建 |
+| 4 换机器人 | 待建 | 待建 |
+
+每个阶段的课程开头必须写明**核心目标**和**完成标准**(阶段 0、1 已如此)。
 
 ### 加载规则:用户说"学习阶段 N"时
 

@@ -21,7 +21,6 @@ __pycache__/
 /policies/roller*.onnx
 /policies/roulade.onnx
 /policies/manifest.json
-/policies/README.md
 /policies/.cache/
 
 # 注:自己训练的成果(*_velocity.onnx / my_*.onnx / untrained_*.onnx)不在上面任何一条里,
