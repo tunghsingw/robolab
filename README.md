@@ -68,8 +68,8 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 | 阶段 | 练什么 | 产出 | 碰代码吗 |
 |---|---|---|---|
 | **0. 会用命令** | 训练、回放、看曲线、续训、导出的命令语法;怎么指定自带任务 | 能独立跑完一整套(`experiments/stage0_commands.md`) | 否 |
-| **1. 学会看** | 回放不同 checkpoint 看行为演化,同时对着 TensorBoard 找对应指标 | 「数字 ↔ 行为」映射表 | 否 |
-| **2. 学会改** | 奖励消融:一次只改一项权重,跑 200–500 轮看变化 | 自己的实验记录表 | 改一个数字 |
+| **1. 学会看** | 回放不同 checkpoint 看行为演化,同时对着 TensorBoard(曲线面板)找对应指标 | 「数字 ↔ 行为」映射表 | 否 |
+| **2. 学会改** | 奖励消融:一次只改一项权重,跑 1000 轮看变化 | 自己的实验记录表 | 改一个数字 |
 | **3. 学会定义任务** | 挑个没训过的任务(SitStand / BallKick)走完整闭环 | 独立完成"定义→训练→部署" | 读配置 |
 | **4. 换机器人** | URDF 导出、执行器辨识 | —— | 以后再说 |
 
@@ -77,10 +77,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 不适合的:需要精细操作或视觉语义理解的——那要走模仿学习那一支,得先有真机采数据,是另一套工程。
 四个阶段走完再往外扩,下一站就是它。
 
-阶段 1 的现成素材:**第一次正式训练 `2026-09-15_12-26-40`**(`model_0` → `model_12500`,间隔 250,51 个存档),
-它录下了"从不会走到会走"的全过程。建议挑 `model_0` / `500` / `1000` / `2000` / `5000` / `12500` 依次回放。
-⚠️ 不要拿 `2026-09-16_09-07-17` 当阶段 1 的主素材:它是从 12500 续训的,课程学习在第 2000 轮就已走完,
-那 5 万轮是打磨阶段,存档之间的行为差别很细,适合阶段 1 学完后用来练"看细节"。
+阶段 1 用哪些存档、怎么看,见 `experiments/stage1_observe.md`。
 
 ### 早先的阶段目标(已完成)
 
@@ -99,7 +96,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 
 | | Windows 原生 | WSL2 |
 |---|---|---|
-| 看画面 | 原生 MuJoCo 窗口,`play` 不用 viser | 只能开网页查看器 |
+| 看画面 | 原生 MuJoCo 窗口能开,但没有奖励条和存档切换,日常 `play` 仍用 viser 网页查看器 | 只能开网页查看器 |
 | 文件搬运 | 训练/导出/推理同一个盘,`policies\` 直接可用 | 导出的 onnx 要拷过 `/mnt/d` |
 | 上游支持 | 自己补的(`pyproject.toml` 加了 win32 的 cu128 索引),出怪问题没人兜底,`git pull` 还可能冲突 | 官方支持的路线 |
 | duck-sim | 跑不了(Rust + Linux) | 只能在这 |
@@ -123,7 +120,7 @@ microduck 是教具不是终点——重点是"换一台机器人时这套方法
 | 目录 | 是什么 | 技术栈 |
 |---|---|---|
 | `src/microduck/` | 真机机载运行时("大脑"):守护进程、50 Hz 控制回路、加载 ONNX 策略 | Rust |
-| `src/microduck_rl/` | 策略训练("学校"):MuJoCo Warp + PPO,**18 个已注册任务**,导出 ONNX | Python (uv 管理) |
+| `src/microduck_rl/` | 策略训练("学校"):MuJoCo Warp + PPO,**18 个基础任务**(另有 15 个齿隙变体),导出 ONNX | Python (uv 管理) |
 
 关键概念:训练 = 4096 只仿真鸭子试错学新动作(吃 GPU);推理 = 拿训练好的 `policy.onnx` 照本执行(CPU 就够)。策略共享 61 维观测契约(48 本体感知 + 13 指令),输入 `[1,61]` → 输出 `[1,14]` 舵机目标。
 
@@ -149,7 +146,7 @@ Windows 侧(推理):
 
 - Python 3.12.6;`uv` 0.12.13 装在 `%USERPROFILE%\.local\bin\uv.exe`,**已在 PATH**,直接敲 `uv` 即可
 - `D:\robot\robolab\src\microduck_rl\.venv` 已通过 `uv sync` 建好(步骤见 `INSTALL.md`)
-- torch 已换成 **CUDA 版 `2.9.1+cu128`**:`pyproject.toml` 里给 `sys_platform == 'win32'` 加了 `pytorch-cu128` 索引(不加的话 Windows 上 PyPI 默认给 CPU 轮子 `2.9.1+cpu`,`cuda.is_available()==False`)。日常用法仍是根目录三个 `run_infer*.ps1`(ONNX 推理);torch 换 GPU 版之后,Windows 也能跑 `play` 回放(**已实测**,用 `--viewer viser` 网页查看器;命令见下文「`uv run play`」一节)
+- torch 已换成 **CUDA 版 `2.9.1+cu128`**:`pyproject.toml` 里给 `sys_platform == 'win32'` 加了 `pytorch-cu128` 索引(不加的话 Windows 上 PyPI 默认给 CPU 轮子 `2.9.1+cpu`,`cuda.is_available()==False`)。日常用法仍是根目录三个 `run_infer*.ps1`(ONNX 推理);torch 换 GPU 版之后,Windows 也能跑 `play` 回放(**已实测**,用 `--viewer viser` 网页查看器;命令见 `experiments/stage0_commands.md` 第八节)
 
 WSL 侧(训练):
 
@@ -225,7 +222,7 @@ MuJoCo 窗口弹出、鸭子站好后按键控制。**已打补丁:MuJoCo 窗口
 
 #### 已有的训练履历(阶段 1 的素材)
 
-WSL `~/robolab/src/microduck_rl/logs/rsl_rl/velocity/` 下:
+训练存档(`logs\rsl_rl\velocity\` 下;WSL 的 run 已整体复制到 Windows 同一相对位置):
 
 | run 目录 | 存档 | 是什么 |
 |---|---|---|
@@ -233,11 +230,12 @@ WSL `~/robolab/src/microduck_rl/logs/rsl_rl/velocity/` 下:
 | `2026-09-15_12-01-14` | 0 个 | 起了就停 |
 | `2026-09-15_12-26-40` | `model_12500`(51 个) | 第一次正式训练,到 12500 |
 | `2026-09-16_09-07-17` | **`model_62499`(201 个)** | 从 12500 续训,再跑满 50000 |
+| `2026-09-28_21-50-30`(Windows) | 到 `model_15000` 左右 | Windows 上从 0 重新训练一次,配置同上;阶段 1 结业考试用 |
 
 所以"6 万多轮" = 12500 + 50000 两段拼起来:第二段从 12500 开始,每 250 存一个到 62250(200 个),训练结束再存一个 `model_62499`(最后一轮的编号 = 12500 + 50000 − 1),共 201 个。
 第二段停在 62499 是因为 `--agent.max-iterations` 默认 50000 跑满了。
 
-Windows 侧 `logs\rsl_rl\velocity\` 下另有 3 个 run(2026-09-18),最多到 `model_1750`,是验证 Windows 能否训练时留下的。
+Windows 侧另有:`velocity\` 下 3 个 2026-09-18 的 run(最多到 `model_1750`,验证 Windows 能否训练时留下的);`microduck_sitstand\` 下阶段 0 练习留下的冒烟测试和 `sitstand_try`,可删。
 
 存档要在 Windows 上回放,先从 WSL 整体复制到 Windows 的相同相对位置,命令见阶段 0 笔记第八节(`logs` 被 git 忽略,不会误提交)。
 
@@ -298,8 +296,6 @@ dnsTunneling=true
 
 ⚠️ **从 Git Bash 调 `wsl.exe` 的坑**:MSYS 路径转换会把 `/mnt/d/...`、URL 等参数改坏(症状:`No such file or directory` 带 Git 安装路径前缀、循环变量神秘变空)。加 `MSYS_NO_PATHCONV=1` 前缀,复杂命令写成 `.sh` 脚本放 `D:/wsl/` 再 `wsl -d Ubuntu -- bash /mnt/d/wsl/xxx.sh`。(AI 助手在独立 Ubuntu 沙箱里工作,够不到 `wsl.exe`,这条只在你自己用 Git Bash 时适用。)
 
-⚠️ Windows 原生路线后来也补齐了(torch 换成 cu128,warp 的 Windows 轮子本来就认 GPU),技术上已无障碍,但没实测过。训练仍走 WSL2——那是官方支持的路线。
-
 ### 以后可选:duck-sim 全栈模拟(WSL2 已就绪)
 
 主仓库 `scripts/duck-sim`:真机的全套 Rust 守护进程 + MuJoCo 身体,用 `robotctl` 像操作真鸭子一样操作,用于学习机载软件架构。
@@ -307,7 +303,9 @@ dnsTunneling=true
 ## 重要文档入口
 
 - `experiments/stage0_commands.md` — **所有日常命令**(训练、续训、回放、看曲线、导出、自带任务清单)
-- `AGENTS.md`(根目录) — 三处 clone(讨论沙箱 / Windows / WSL)的分工与同步约定;给 AI 助手看的操作规则
+- `experiments/stage1_observe.md` / `experiments/stage1_checkpoint_behavior_map.md` — 阶段 1 课程 / 记录本
+- `experiments/stage2_reward_ablation.md` — 阶段 2 大纲
+- `AGENTS.md`(根目录) — 三处 clone(讨论沙箱 / Windows / WSL)的分工与同步约定;给 AI 助手看的操作规则和分阶段学习规则
 - `src/microduck_rl/AGENTS.md` — 训练/奖励设计/sim2real 的经验手册(精华,必读)
 - `src/microduck_rl/README.md` — 任务列表、命令速查、发布流程
 - `src/microduck/docs/robot/simulation.md` — duck-sim 用法
@@ -323,7 +321,7 @@ dnsTunneling=true
 - [x] WSL 网络切换 mirrored 模式(`.wslconfig`),本机系统代理(127.0.0.1:7890)在 WSL 内可用,GitHub/HF 可直连;gh-proxy/USTC/hf-mirror 作为代理离线时的兜底
 - [x] 建 GitHub 仓库 `tunghsingw/robolab`,三处(沙箱 / Windows `D:\robot\robolab` / WSL `~/robolab`)都改成它的 clone,文档与脚本走 git 同步
 - [x] Windows 原生训练打通并与 WSL 实测对比(1024 envs × 200 迭代:WSL 7:28 / Windows 7:56,差 6%),两边都能训练
-- [ ] 第一个自己训练的步态(从 `--env.scene.num-envs 1024` 起步)
+- [x] 第一个自己训练的步态:WSL `2026-09-15_12-26-40`(0 → 12500 轮)+ 续训 `2026-09-16_09-07-17`(→ 62499);Windows 从 0 再训一次 `2026-09-28_21-50-30`(→ 15000 轮左右)
 - [x] 阶段 0 会用命令:`experiments/stage0_commands.md` 第十二节 7 道练习已做完
 - [ ] 阶段 1 学会看:课程 `experiments/stage1_observe.md`,记录本 `experiments/stage1_checkpoint_behavior_map.md`;练习 1–6 进行中
 - [ ] 阶段 2 学会改:大纲已定(见 `experiments/stage2_reward_ablation.md`)

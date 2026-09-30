@@ -1,7 +1,7 @@
 # INSTALL.md — 从零搭建
 
 > **这份文档不依赖机器上任何现有文件。** 拿一台干净的 Windows 11 机器,从头照着做就能跑起来。
-> 日常使用看 `README.md`;三处环境的分工看 `AGENTS.md`。
+> 日常命令看 `experiments/stage0_commands.md`;学习路线看 `README.md`;三处环境的分工看 `AGENTS.md`。
 
 ## 0. 前提
 
@@ -208,7 +208,7 @@ dnsTunneling=true
 `wsl --shutdown` 重启生效。
 
 **镜像模式的两个好处**:① Windows 的本机代理(如 `127.0.0.1:7890`)在 WSL 里直接可用;
-② Windows 浏览器能直接开 `localhost:<端口>` 看 WSL 里的 TensorBoard 和 viser 查看器。
+② Windows 浏览器能直接开 `localhost:<端口>` 看 WSL 里的 TensorBoard(曲线面板)和 viser 查看器。
 
 代理不在线时的兜底——git 走 gh-proxy:
 
@@ -297,7 +297,7 @@ WANDB_MODE=offline uv run train Mjlab-Velocity-Flat-MicroDuck --env.scene.num-en
 
 ## 5. 装完之后
 
-- 日常命令、按键表、训练与导出流程 → `README.md`
+- 日常命令(训练、回放、看曲线、导出)→ `experiments/stage0_commands.md`;学习路线、按键表 → `README.md`
 - 三处环境分工、同步约定 → `AGENTS.md`
 - 名词不懂 → `GLOSSARY.md`
 - 找资料 → `REFERENCES.md`
