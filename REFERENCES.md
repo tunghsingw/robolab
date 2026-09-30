@@ -1,69 +1,204 @@
-# REFERENCES.md — 外部信息来源
+# REFERENCES.md — 资料库:内外信息来源与摘要
 
-> **共同的信息来源清单。** 记录哪些资料可以参考、各自能回答什么问题。
+> **共同的资料库。** 每条资料记四件事:是什么(含可信度)、摘要、能回答什么(对应学习阶段)、注意。
 >
-> **用法**:查外部信息前先看这里有没有现成来源;用了新来源就记进来,并注明"它能回答什么"。
-> **规矩**:凡是"领域现状 / 技术分类 / 谁家用什么方法"这类问题,**先查这里,查不到就联网核实,核实完把来源加进来**。
-> 不要凭记忆答——本项目 README 里最初那版"两条技术栈"的分类就是凭记忆写的,三处硬伤。
+> **用法**:查信息前先看这里有没有现成来源;用了新来源就按第五节格式记进来。
+> **规矩**:凡是"领域现状 / 技术分类 / 谁家用什么方法 / 论文结论"这类问题,**先查这里,查不到就联网核实,核实完记进来**。
+> 不要凭记忆答——本项目 README 最初那版"两条技术栈"的分类就是凭记忆写的,三处硬伤;后来"行为克隆占比"又张冠李戴过一次(见三·7)。
 >
-> **收录范围:只收具身智能 / 机器人学习相关的资料。** 通用开发话题(git 用法、包管理、工具链选型)查完就用,
-> **不进这个文件**——那些结论该写进 `AGENTS.md` 的正文,不该在这里堆链接。
+> **收录范围:只收具身智能 / 机器人学习相关的资料。** 通用开发话题(git、包管理、工具链)查完就用,不进这个文件。
 >
-> **标记**:`✓` = 已核实/直接读过;`?` = 凭记忆列出,引用前必须先核实。
+> **标记**:`✓` = 已核实、读过原文;`?` = 待核实,引用前先查。**可信度**按 同行评审 > 会议论文 > 预印本 > 媒体报道 > 二手索引 排。
+
+## 〇、一页总览:问题 → 先看哪条
+
+| 要解决的问题 | 先看 | 阶段 |
+|---|---|---|
+| 某个命令、某个任务 ID、当前配置 | 一·2 上游 README;一·5 训练日志开头的表 | 0–1 |
+| 奖励怎么设计、为什么这项要 ≤ 0、课程怎么排 | 一·1 上游经验手册 | 2–3 |
+| 某个奖励 / 观测项在框架里怎么注册 | 二·3 mjlab(以 1.3.0 为准) | 2–3 |
+| PPO 超参数是什么意思 | 二·4 rsl_rl 源码 | 2 |
+| MJCF 里某个属性(armature、condim…)的定义 | 二·2 MuJoCo XML 参考 | 1、4 |
+| 舵机为什么要建到电压环、怎么给新舵机辨识 | 二·6 BAM 文档;三·8 BAM 论文;四·1、四·4 | 2、4 |
+| CAD 怎么导出成 MJCF | 二·5 onshape-to-robot | 4 |
+| 策略上真机后谁在调用它 | 一·3、一·4 机载文档 | 4 |
+| 运动控制 vs 操作、RL vs IL vs MPC 的关系 | 三·1、三·3、三·5 | 领域地图 |
+| 想给步态"自然感"、想用参考动作 | 四·5 AMP;三·1 | 3 |
+| 换一台别的机器人,别人怎么配训练环境 | 三·9 知识库的 Locomotion 与工程部署分页 | 4 |
 
 ## 一、项目内部(最优先,不用联网)
 
-| 来源 | 能回答什么 |
-|---|---|
-| `src/microduck_rl/AGENTS.md` | **上游作者的经验手册,精华。** 奖励设计的硬规则、sim2real 踩过的坑、课程学习怎么排、怎么建一个新任务。每条都是出过事换来的 |
-| `src/microduck_rl/README.md` | 任务列表、命令速查、发布流程 |
-| `src/microduck/docs/robot/simulation.md` | duck-sim 全栈模拟怎么用 |
-| `src/microduck/docs/design/architecture.md` | 真机机载系统架构 |
-| **训练日志开头的几张表** | **当前配置的实况**:ObservationManager(观测构成)、RewardManager(16 项奖励及权重)、CurriculumManager(7 项课程)、EventManager(域随机化和扰动)。比读源码快,而且一定是最新的 |
-| 本项目 `README.md` / `GLOSSARY.md` | 学习目标、领域地图、实践路线、训练履历 / 名词解释 |
+### 1. `src/microduck_rl/AGENTS.md` — 上游作者的经验手册 ✓
+- **是什么**:Pollen Robotics 写给开发者和 agent 的手册,随 `upstream.repos` 锁定的 commit(3412ae5,2026-09-13)。每条规则都是踩坑换来的。
+- **摘要**:九节——命令、仓库地图、不变量、建新环境流程、奖励设计规则、指令与观测、课程、训练运维、sim2real 坑。不变量:61 维观测(48 本体 + 13 指令)、14 舵机顺序、BAM 执行器、归一化器烤进 ONNX、策略无滤波、域随机化不累积。奖励铁律:每个惩罚项的 `Episode_Reward` 必须 ≤ 0;不设"到达即拿"的一次性大奖;正奖励不能以坏状态为门槛;正则项分"阻碍动作"和"平滑"两类,平滑项要在技能学会后再加;比较奖励看总量不看权重。指令槽永远不能全零,否则对应权重死掉。预算:简单动作约 1000 轮,步态 4000–6000 轮(4096 环境)。
+- **能回答什么 / 阶段**:阶段 2 的主教材;阶段 3 建新任务的流程(挑最近的模板、先在仿真里验证物理假设、写配置测试、冒烟)。
+- **注意**:【microduck 特有】和【通用】混写,读时要自己分开标。
+
+### 2. `src/microduck_rl/README.md` — 上游用户手册 ✓
+- **是什么**:同一 commit 的用户手册。
+- **摘要**:五条快速命令(train / play / export / publish / infer_policy);任务表列了 13 个任务 + 齿隙变体(注册表实际 18 个基础任务,见阶段 0 第四节);执行器 BAM M6 XL330(电压控制、反电动势、摩擦)+ 电压 / 延迟 / 摩擦随机化;四个 MJCF 模型的分工表;发布时校验 `[1,61] → [1,14]`。
+- **能回答什么 / 阶段**:阶段 0–1 查任务 ID、模型文件、命令。
+- **注意**:`publish`、HF Jobs 本项目不用。
+
+### 3. `src/microduck/docs/robot/simulation.md` — duck-sim 手册 ✓
+- **是什么**:机载运行时仓库的"仿真鸭"使用手册(commit e9cca62,2026-09-13)。
+- **摘要**:`robotd --sim` 通过 TCP 接一个 MuJoCo 身体(即 microduck_rl 的 duck-body),守护进程代码与真机一字不差;`up`(普通进程)与 `boot N`(容器)两种启动;实时率低于 1.0× 策略就站不稳,45 Hz 是健康门;`--sim` 不等于 `--fake`(后者无物理)。
+- **能回答什么 / 阶段**:ONNX 在真实运行时里怎么被消费;以后在 WSL 跑 duck-sim 时看。
+- **注意**:需要 Rust 构建 + microduck_rl 的 venv,只能在 Linux。
+
+### 4. `src/microduck/docs/design/architecture.md` — 机载系统设计 ✓
+- **是什么**:运行时 v1 设计文档(草稿,2026-07-22),写的是目标架构,不全是当前原型。
+- **摘要**:7 个守护进程(robotd / configd / updaterd / btd / padd / mediad / tofd)+ `robotctl`,JSON-RPC over Unix socket;robotd 独占串口、跑 50 Hz 循环、掌握安全权,客户端只发意图;发布整目录原子切换 + 健康门 + 自动回滚。**真机 15 个舵机,第 15 个是嘴巴;策略只管 14 个关节,写回电机时嘴巴那一位由运行时另管**(细节在同目录 `robotd-design.md`)。
+- **能回答什么 / 阶段**:阶段 4 部署认知——策略上机后谁调用它、谁保安全。
+- **注意**:RL 学习阶段几乎不用读。
+
+### 5. 训练日志开头的几张表 ✓
+- **是什么**:每次 `train` 启动时打印的 ObservationManager、RewardManager、CurriculumManager、EventManager 表。
+- **摘要**:当前**生效**的观测构成、奖励项与权重、课程项、随机化与扰动项。
+- **能回答什么 / 阶段**:每次训练。改过参数是否生效、这个任务有几项奖励,看它最快也最准。
+- **注意**:比读源码可靠,因为它反映的是运行时真实配置。
+
+### 6. 本项目 `README.md` / `GLOSSARY.md` / `experiments/runs.md` / `policies/README.md` ✓
+- **能回答什么**:学习目标与领域地图、进度 / 名词解释 / 有哪些训练存档 / 有哪些策略文件及来源。
 
 ## 二、官方文档
 
-| 来源 | 链接 | 能回答什么 | 核 |
-|---|---|---|:-:|
-| MuJoCo 文档 | https://mujoco.readthedocs.io/ | 仿真器原理、MJCF 格式、XML 元素参考 | ✓ |
-| mjlab | https://github.com/mujocolab/mjlab | 训练框架的 API、CLI 参数、任务注册机制 | ✓ |
-| rsl_rl | https://github.com/leggedrobotics/rsl_rl | PPO 实现细节、训练循环、checkpoint 格式 | ✓ |
-| MuJoCo XML 参考 | https://mujoco.readthedocs.io/en/stable/XMLreference.html | MJCF 每个属性的精确定义:armature、frictionloss、condim、contype/conaffinity、freejoint、keyframe | ✓ |
-| onshape-to-robot 文档 | https://onshape-to-robot.readthedocs.io/ | CAD → URDF/MJCF 怎么导出,`config.json` 各字段(ignore、additional_xml、joint_properties、post_import_commands)的含义 | ✓ |
-| BAM 文档 / 代码 | https://bam.readthedocs.io/ · https://github.com/Rhoban/bam | 舵机扩展摩擦模型怎么辨识、有哪些现成舵机模型(XL330 等)、怎么接入 mjlab。**换舵机时照着它搭台架** | ✓ |
-| microduck(上游) | https://github.com/pollen-robotics/microduck | 真机运行时(Rust)、策略怎么加载 | ✓ |
-| microduck_rl(上游) | https://github.com/pollen-robotics/microduck_rl | 训练环境本体 | ✓ |
+### 1. MuJoCo 文档 — https://mujoco.readthedocs.io/ ✓
+- **是什么**:Google DeepMind 维护的官方文档,stable 对应 3.14(2026-09),更新活跃。
+- **摘要**:Overview / Computation / Modeling / XML Reference / Programming / API / Python / MJX / MuJoCo Warp / Changelog。四个特色:广义坐标 + 凸优化软接触、腱、统一的抽象执行器模型、MJCF 建模语言。
+- **能回答什么 / 阶段**:仿真器原理、接触怎么算、一步物理流水线是什么。阶段 1 看模型文件,阶段 4 建新模型。
+- **注意**:本项目实际用 **mujoco 3.10.0**,与 stable 差几个小版本,行为有疑问查 Changelog。
 
-## 三、领域综述与关键资料(已核实)
+### 2. MuJoCo XML 参考 — https://mujoco.readthedocs.io/en/stable/XMLreference.html ✓
+- **是什么**:同上,单页约 1.3 MB,按元素逐一列属性。
+- **摘要**:已确认定义:`joint/armature`(转子附加惯量,默认 0)、`joint/frictionloss`(干摩擦)、`geom/condim`(1 无摩擦、3 常规、4/6 加扭转 / 滚动)、`geom/contype` 与 `conaffinity`(32 位掩码,一方 contype 与另一方 conaffinity 有公共位才碰撞)、`body/freejoint`、`keyframe/key`。
+- **能回答什么 / 阶段**:阶段 1–2 查机器人 XML 里的属性;阶段 4 写新 MJCF。
+- **注意**:页面太大,用锚点(如 `#body-joint-armature`)直达。
 
-| 来源 | 链接 | 能回答什么 | 核 |
-|---|---|---|:-:|
-| 腿足机器人模仿学习综述(Frontiers) | https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1678567/full | IL 在腿足机器人上的全貌。**"MPC 日志已成为腿足 IL 最常用训练数据源、超过动捕"这个结论出自这里** | ✓ |
-| 机器人 RL 分类与趋势 | https://arxiv.org/html/2510.21758v3 | RL 方法分类、与控制论的结合方式 | ✓ |
-| 深度 RL 真实世界落地综述 | https://arxiv.org/html/2408.03539v1 | 哪些 RL 成果真上了真机。**"locomotion 比 manipulation 成熟"的论据来源** | ✓ |
-| 人形视觉灵巧操作 sim2real | https://arxiv.org/pdf/2502.20396 | **操作方向也能做仿真 RL 的证据**,用来反驳"操作只能靠采数据" | ✓ |
-| 控制 + 机器学习融合分类(Actuators) | https://www.mdpi.com/2076-0825/15/5/235 | MPC / RL / IL 三者怎么混着用 | ✓ |
-| Atlas + TRI 大行为模型 | https://www.therobotreport.com/boston-dynamics-tri-use-large-behavior-models-train-atlas-humanoid/ | **Atlas 的真实技术栈**:MPC 做底层控制和遥操作底座,上面叠扩散 Transformer 的 LBM | ✓ |
-| 操作模仿学习分类综述 | https://arxiv.org/html/2508.17449v1 | IL 在操作方向的方法谱系;行为克隆占比等数据 | ✓ |
-| BAM 论文:Duclusaud et al., ICRA 2025 | https://arxiv.org/abs/2410.08650 | **为什么 MuJoCo 默认的"库仑 + 粘性"摩擦不够用**;Stribeck / 负载相关摩擦模型;摆锤台架辨识方法 | ✓ |
-| **人形机器人运动智能知识库**(RealXiaoze/humanoid-motion-intelligence,中文) | https://github.com/RealXiaoze/humanoid-motion-intelligence | **运动控制方向的中文索引与地图**:六条技术路线(动作数据、Locomotion、动作跟踪、LocoManip、世界模型/VLA、工程部署)+ 论文逐篇解读 + 训练框架/数据集/公司/求职资料。2026-07 建库、持续更新(600+ star),CC BY-NC-SA。**它是二手索引,不是结论来源**:它自己的 AGENTS.md 就要求"回原始论文/官方仓库核实",所以引用时只用它找入口,结论回原文 | ✓ 读过主页、目录和下列分页 |
-| ↳ `技术与研究/02_Locomotion与运动先验.md` | https://github.com/RealXiaoze/humanoid-motion-intelligence/blob/main/技术与研究/02_Locomotion与运动先验.md | **腿足 RL 运动控制的论文清单**(基础行走、地形感知、抗扰、运动先验/AMP)+ **几十个"按机器人配训练环境"的项目**(Unitree RL Mjlab、AMP_mjlab 等基于 mjlab 的,以及各厂商基于 Isaac Lab / legged_gym 的)。阶段 4 换机器人时,看别人怎么给自己的本体写观测/奖励/随机化配置 | ✓ |
-| ↳ `技术与研究/06_工程与实机部署.md` | https://github.com/RealXiaoze/humanoid-motion-intelligence/blob/main/技术与研究/06_工程与实机部署.md | **换机器人的工具箱**:URDF/MJCF/USD 模型资源(MuJoCo Menagerie、robot_descriptions.py、在线 URDF 比较器)、系统辨识与 Sim2Real 工具(PACE Sim2Real:固定基座激励 + CMA-ES 拟合惯量/摩擦/延迟;PRIME;ASAP)、策略推理运行框架、评测基准 | ✓ |
-| ↳ `强化学习开发者必备开源资料/`(README + 书籍与课程) | https://github.com/RealXiaoze/humanoid-motion-intelligence/tree/main/强化学习开发者必备开源资料 | RL 框架与仿真平台一览(RSL-RL、legged_gym、Isaac Lab、K-Sim 等,每条一句用途);**中文 RL 入门材料**(Easy-RL、动手学强化学习、王树森课程)和机器人学/动力学/足式机器人书单。补 RL 与机器人学基础时从这里挑 | ✓ |
-| ↳ `技术与研究/双轮足机器人训练开源方案表.md` | https://github.com/RealXiaoze/humanoid-motion-intelligence/blob/main/技术与研究/双轮足机器人训练开源方案表.md | 6 个双轮足机器人 RL 训练方案对照(框架、动作接口"RL 直接出关节动作 vs RL+VMC"、任务能力)。**以后第三方设备若是轮足形态,从这张表起步** | ✓ |
+### 3. mjlab — https://github.com/mujocolab/mjlab ✓
+- **是什么**:mujocolab 的训练框架(Apache-2.0,论文 arXiv 2601.22074):Isaac Lab 风格的 manager 式 API + MuJoCo Warp(GPU)。
+- **摘要**:docs 分四块——概念(entity、actuator、sensor、scene、terrain)、manager 层(observation、action、reward、termination、command、event、curriculum)、训练(rsl_rl、多卡、查看器、NaN 防护、导出场景)、迁移与 FAQ。`--agent zero|random` 可做 MDP 冒烟。
+- **能回答什么 / 阶段**:阶段 2–3——奖励项 / 观测项怎么注册、环境配置长什么样。
+- **注意**:**本项目训练用的是 PyPI 的 mjlab 1.3.0**(`microduck_rl` 写死 `mjlab==1.3.0`),`src/mjlab` 是参考 clone,已锁到 v1.3.0 与之对齐。读源码得出的结论以 1.3.0 为准。
 
-## 四、经典奠基论文(已核实:标题、作者、日期均查自 arXiv 摘要页)
+### 4. rsl_rl — https://github.com/leggedrobotics/rsl_rl ✓
+- **是什么**:ETH 机器人系统实验室的 RL 库(BSD-3),PyPI 名 `rsl-rl-lib`;提供 PPO、师生蒸馏、多卡。
+- **摘要**:README 只有安装和引用,没有算法说明;要看 PPO 细节得读 `rsl_rl/algorithms/ppo.py`。
+- **能回答什么 / 阶段**:阶段 2 看 PPO 超参数含义。
+- **注意**:本项目锁 **5.0.1**(随 mjlab 1.3.0);没有本地 clone,源码在 `.venv` 里。
 
-| 论文 | 链接 | 能回答什么 | 核 |
-|---|---|---|:-:|
-| Hwangbo et al. 2019, *Learning agile and dynamic motor skills for legged robots*(Science Robotics) | https://arxiv.org/abs/1901.08652 | **执行器网络**(actuator network)——用真机数据训一个小网络当执行器模型,替代解析模型,sim2real 奠基工作之一。本项目的 BAM 是同一思路的解析版 | ✓ |
-| Rudin et al. 2021, *Learning to Walk in Minutes Using Massively Parallel Deep RL* | https://arxiv.org/abs/2109.11978 · 代码 https://github.com/leggedrobotics/legged_gym | **几千环境 GPU 并行 + 地形课程**训练四足行走——现在"几千只鸭子并行试错"这一范式的源头;legged_gym 就是它的代码 | ✓ |
-| Lee et al. 2020, *Learning Quadrupedal Locomotion over Challenging Terrain*(Science Robotics) | https://arxiv.org/abs/2010.11251 | **只靠本体感知的盲走**:特权信息教师 → 本体历史学生。本项目"非对称 Actor-Critic、actor 观测里没有线速度"的思想来源 | ✓ |
-| Tan et al. 2018, *Sim-to-Real: Learning Agile Locomotion For Quadruped Robots* | https://arxiv.org/abs/1804.10332 | **执行器建模 + 延迟仿真 + 系统辨识 + 域随机化**跨越四足 sim2real 差距。回答"为什么小型机器人要在执行器模型上下功夫" | ✓ |
-| Peng et al. 2021, *AMP: Adversarial Motion Priors for Stylized Physics-Based Character Control* | https://arxiv.org/abs/2104.02180 | **用对抗判别器从动作数据学"风格奖励"**,替代手写的步态正则项。知识库里大量人形项目(AMP_mjlab、各厂商 *_amp)都基于它;阶段 3 想让步态"自然"时的另一条路 | ✓ |
+### 5. onshape-to-robot — https://onshape-to-robot.readthedocs.io/ ✓
+- **是什么**:Rhoban 的 CAD 导出工具与文档,v1.8.3(2026-08)。
+- **摘要**:章节:入门、设计期约定(自由度、命名、坐标系)、Configuration、URDF、SDF、MuJoCo、闭链、Processors。字段已确认:`ignore`、`post_import_commands` 在 Configuration 页;`joint_properties`、`geom_properties`、`equalities`、`additional_xml` 在 MuJoCo 页。本项目每个 `config_mjcf_*.json` 就是这些字段。
+- **能回答什么 / 阶段**:阶段 4——自己的机器人从 CAD 到 MJCF。
+- **注意**:本地配置用驼峰写法(`outputFormat`),文档是下划线(`output_format`),导出时用的工具版本可能更旧;复现导出前先核对版本。
+
+### 6. BAM 文档与代码 — https://bam.readthedocs.io/ · https://github.com/Rhoban/bam ✓
+- **是什么**:Rhoban 的舵机扩展摩擦模型库,配 ICRA 2025 论文(三·8)。
+- **摘要**:Usage(MuJoCo CPU 控制器;mjlab 接入 `BamActuatorCfg` + 启动事件,`vin` / `kp_fw` 覆盖,`vin_range` 随机化)、Identification(单摆台架)、Theory(M1 库仑加粘性 → M2 Stribeck → M3 负载相关 → … → M6)。内置电机:XL330-M288-T、XL-320、MX-64/106、STS3215、eRob80。
+- **能回答什么 / 阶段**:阶段 2 理解 sim2real 里执行器为什么要建到电压环;阶段 4 给新舵机做辨识,照它搭台架。
+- **注意**:本项目用的是 git 分支 `mjlab_frictionloss` 的 1.0.1,不是 PyPI 版;文档写明兼容 mjlab 1.3。
+
+### 7. microduck 上游 — https://github.com/pollen-robotics/microduck ✓
+- **是什么**:Pollen Robotics 的 Rust 机载运行时,本地 clone 2026-09-13。
+- **摘要**:约 25 cm、800 g,RK3566,50 Hz 控制环,总线上 15 个 XL330;策略契约固定 `obs[1,61] → act[1,14]`,加载时校验。docs 三层:robot(cheatsheet、duckctl、simulation、install-dev)、design(architecture、robotd-design、policy-channel、updater)、project。`policy-manifest.md` 定义策略清单格式(episodic / perpetual / scripted)。
+- **能回答什么 / 阶段**:阶段 0–1 看 ONNX 在真机怎么被消费;阶段 3 发布策略。
+- **注意**:全是【microduck 特有】。
+
+### 8. microduck_rl 上游 — https://github.com/pollen-robotics/microduck_rl ✓
+- **是什么**:训练仓库(Apache-2.0,3D 模型 CC BY-SA-NC),本地 clone 2026-09-13。
+- **摘要**:mjlab 1.3.0 + PPO;任务见阶段 0 第四节;61 维观测 = 48 本体 + [twist 3, head_pose 4, body_pose 6];14 舵机布局 0–4 左腿、5–8 颈头、9–13 右腿;BAM M6 + 电压 / 延迟 / 摩擦随机化。代码:`tasks/mdp.py`(所有自定义奖励 / 事件 / 观测)、`microduck_*_env_cfg.py`(各任务配置)、`actuator/friction_dr_bam.py`;脚本 `export.py`、`infer_policy.py`。
+- **能回答什么 / 阶段**:阶段 0–3 的主战场。
+- **注意**:导出必须走 `scripts/export.py`;上游 develop 分支活跃,升级前看 diff。
+
+## 三、领域综述与关键资料
+
+### 1. 腿足机器人模仿学习综述 — Frontiers in Robotics and AI, 2025 ✓
+- **是什么**:期刊综述(同行评审,Frontiers 审稿偏宽),Mirza & Singh,2025-10 上线。https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1678567/full
+- **摘要**:分析 35 篇四足 / 人形模仿学习工作。方法族:行为克隆 15 篇(43%)、AMP 23%、扩散 14%、MPC 蒸馏 9%。数据源:MPC 日志 11 篇(31%)、人类动捕 23%、动物动捕 14%、机器人自采 17%、视频 6%。结论之一:专家数据质量是 sim2real 成功最强的预测因子。
+- **能回答什么 / 阶段**:领域地图;阶段 3 选参考动作 / 专家数据源。
+- **注意**:"MPC 日志已成为最常用数据源、超过动捕"按**单类**计成立(31% > 23%、14%);两类动捕合计 37%,反而高于 MPC 日志。引用时说清口径。样本只有 35 篇。
+
+### 2. 机器人 RL 分类与趋势 — arXiv 2510.21758 ✓(仅供分类参考)
+- **是什么**:预印本,尼日利亚空军技术学院等,v1 2025-10,教科书式综述,原创结论少。
+- **摘要**:MDP 到 DDPG / TD3 / PPO / SAC;四维分类:任务域(locomotion、导航、操作、人机交互、多机器人)、RL 形式、训练流水线、部署成熟度 L0(仅仿真)到 L5(商用)。
+- **能回答什么 / 阶段**:领域地图;判断"我的策略处于哪个成熟度级别"。
+- **注意**:"与控制论的结合方式"只有一段,想看控制 + 学习怎么混用看三·5。
+
+### 3. 深度 RL 真实世界落地综述 — arXiv 2408.03539 ✓
+- **是什么**:Tang 等,Peter Stone 组,2024-08,录用于 Annual Review of Control, Robotics, and Autonomous Systems(同行评审)。
+- **摘要**:按真实世界成功度分四级评估各方向。四足 RL 已被 ANYbotics、Boston Dynamics 商用,主流是 PPO 零样本 sim2real;双足、无人机成熟度低;操作只在任务空间受限(抓取、手内操作、装配)时成功。成功模式 = 动力学易仿真 + 密集奖励 + 零样本迁移。
+- **能回答什么 / 阶段**:领域地图;阶段 2 理解"运动控制为什么密集奖励加 sim2real 就够"。**"运动控制比操作成熟"的论据出自这里。**
+- **注意**:截至 2024 年中,人形进展未涵盖。
+
+### 4. 人形视觉灵巧操作 sim2real — arXiv 2502.20396 ✓
+- **是什么**:Lin、Sachdev、Fan、Malik、Zhu,CoRL 2025。
+- **摘要**:Fourier GR1 加多指手,Isaac Gym 训练零样本上真机;三任务(抓取放置、双手抬箱、双手交接);配方 = 自动 real-to-sim 调参 + 基于接触 / 物体目标的通用奖励 + 分而治之蒸馏 + 混合物体表征。已见物体 90%,新物体 60–80%。
+- **能回答什么 / 阶段**:**操作方向也能做仿真 RL 的证据**;阶段 3 看"按接触 / 物体目标写奖励"的思路。
+- **注意**:依赖摄像头,成功率不高。
+
+### 5. 控制 + 机器学习融合分类 — Actuators 2026, 15(5):235 ✓
+- **是什么**:期刊综述(MDPI,同行评审),Zhang 等,2026-04。https://www.mdpi.com/2076-0825/15/5/235
+- **摘要**:三范式——学习辅助控制(控制器为主,学习做残差动力学 / 扰动估计 / MPC 调参)、控制辅助学习(策略为主,控制做监督:安全滤波、轨迹优化器当教师)、协同设计(可微规划器)。腿足常用"残差学习 + MPC / WBC"。
+- **能回答什么 / 阶段**:领域地图;"MPC 蒸馏、残差 RL 各属哪类"。
+- **注意**:直接抓取会被拦,需代理。
+
+### 6. Atlas + TRI 大行为模型 — The Robot Report, 2025-08 ✓
+- **是什么**:媒体报道,转述 Boston Dynamics 博客,无独立评测。https://www.therobotreport.com/boston-dynamics-tri-use-large-behavior-models-train-atlas-humanoid/
+- **摘要**:遥操作建在 Atlas 的 MPC 之上;策略输入图像 / 本体 / 语言,30 Hz 控制全身;450M 参数扩散 Transformer,流匹配损失;每次预测 48 步动作块、执行 24 步;神经策略与遥操作共用同一控制接口。
+- **能回答什么 / 阶段**:领域地图——工业界 MPC 与学习策略怎么分层。
+- **注意**:厂商宣传口径。
+
+### 7. 操作模仿学习综述 — arXiv 2508.17449 ✓
+- **是什么**:预印本,Li 等(里昂中央理工、北航、大连理工),2025-08。
+- **摘要**:精选 82 篇 2021–2025 操作 IL 工作,按动作生成(扩散、流匹配、回归、自回归)与任务规划(关键位姿、affordance)分类,逐篇给输入、先验、优缺点;汇总 CALVIN 等基准。
+- **能回答什么 / 阶段**:领域地图——操作方向 IL 的方法谱系;与本项目的运动控制关系远。
+- **注意**:**此文没有"行为克隆占比"的统计**;那个 43% 出自三·1 的腿足综述。本文件曾把它记错在这里。
+
+### 8. BAM 论文 — arXiv 2410.08650,Duclusaud 等,ICRA 2025 ✓
+- **是什么**:预印本(会议版 ICRA 2025),波尔多大学 / Inria / Rhoban。
+- **摘要**:MuJoCo、Isaac Gym 默认的库仑 + 粘性摩擦忽略 Stribeck 效应和负载相关性;提出 5 / 3 / 7 参数的扩展模型;单摆台架记录轨迹辨识参数;MX-64、MX-106、eRob80 两型上误差降 1.5–2.9 倍;二连杆臂上误差不到默认模型的一半。
+- **能回答什么 / 阶段**:阶段 2 理解 sim2real 差距来源;阶段 4 换舵机建模。
+- **注意**:只测了四款舵机,microduck 的 XL330 模型在二·6 的库里,换别的舵机要自己辨识。
+
+### 9. 人形机器人运动智能知识库(中文)— https://github.com/RealXiaoze/humanoid-motion-intelligence ✓(二手索引)
+- **是什么**:中文知识库,2026-07 建、持续更新,600+ star,CC BY-NC-SA。**是索引不是结论来源**,它自己的 AGENTS.md 就要求回原始论文核实。
+- **摘要**:六条技术路线(动作数据与重定向、Locomotion 与运动先验、动作跟踪与全身控制、LocoManip、世界模型 / VLA、工程与实机部署)+ 论文逐篇解读 + 训练框架 / 数据集 / 公司 / 求职资料。已读分页:
+  - `技术与研究/02_Locomotion与运动先验.md`:腿足 RL 论文清单 + 几十个"按机器人配训练环境"的项目(含基于 mjlab 的 Unitree RL Mjlab、AMP_mjlab)。阶段 4 看别人怎么给自己的本体写观测 / 奖励 / 随机化。
+  - `技术与研究/06_工程与实机部署.md`:URDF / MJCF 模型资源(MuJoCo Menagerie、robot_descriptions.py)、系统辨识与 sim2real 工具(PACE Sim2Real、PRIME、ASAP)、评测基准。阶段 4 的工具箱。
+  - `强化学习开发者必备开源资料/`:RL 框架与仿真平台一览;中文 RL 入门材料(Easy-RL、动手学强化学习、王树森课程)与机器人学书单。补基础时从这里挑。
+  - `技术与研究/双轮足机器人训练开源方案表.md`:6 个双轮足方案对照(直接出关节动作 vs RL + VMC)。第三方设备若是轮足形态,从这里起步。
+- **能回答什么 / 阶段**:找入口用,阶段 4 为主。
+- **注意**:只用它找入口,结论回原文。
+
+## 四、奠基论文(标题、作者、日期均查自 arXiv 摘要页)
+
+### 1. Hwangbo 等 2019,*Learning agile and dynamic motor skills for legged robots* — Science Robotics ✓
+- **摘要**:仿真训练神经网络策略迁移到 ANYmal 四足,精确省能地跟踪速度指令、跑得更快、摔倒能恢复。关键机制**执行器网络**(用真机数据训一个小网络当执行器模型)在正文,摘要未提。https://arxiv.org/abs/1901.08652
+- **能回答什么 / 阶段**:阶段 4——执行器模型为什么是 sim2real 核心;与本项目 BAM(解析式)对照。
+- **注意**:四足 + 串联弹性执行器,思路可迁移、模型不能直接用。
+
+### 2. Rudin 等 2021,*Learning to Walk in Minutes Using Massively Parallel Deep RL* — CoRL 2021 ✓
+- **摘要**:单卡上几千个仿真机器人并行,分析并行体制下各算法组件的影响,"游戏式"地形课程;ANYmal 平地不到 4 分钟、崎岖地形 20 分钟学会。代码即 legged_gym。https://arxiv.org/abs/2109.11978
+- **能回答什么 / 阶段**:阶段 1–2——为什么要几千个环境并行、课程为什么分级;mjlab + rsl_rl 这套范式的源头。
+- **注意**:legged_gym 基于 Isaac Gym,本项目用 MuJoCo Warp,思想同、接口异。
+
+### 3. Lee 等 2020,*Learning Quadrupedal Locomotion over Challenging Terrain* — Science Robotics ✓
+- **摘要**:控制器只用本体感知、无视觉;仿真训练零样本泛化到泥、雪、碎石、植被等训练未见环境。**特权信息教师 → 本体历史学生**在正文,摘要未提。https://arxiv.org/abs/2010.11251
+- **能回答什么 / 阶段**:阶段 2–3——actor 为什么不看线速度而 critic 能看、观测为什么带历史。
+- **注意**:本项目用非对称 Actor-Critic,不是显式师生蒸馏。
+
+### 4. Tan 等 2018,*Sim-to-Real: Learning Agile Locomotion For Quadruped Robots* ✓
+- **摘要**:从零用简单奖励学四足步态;缩小 reality gap 两手抓——改仿真器(系统辨识、精确执行器模型、模拟延迟)+ 学鲁棒策略(随机化物理参数、加扰动、紧凑观测)。https://arxiv.org/abs/1804.10332
+- **能回答什么 / 阶段**:阶段 2、4——本项目的随机化开关、指令延迟随机化、BAM 电压 / 摩擦随机化都对应这四件套。
+- **注意**:Google Brain 的小四足,方法通用。
+
+### 5. Peng 等 2021,*AMP: Adversarial Motion Priors for Stylized Physics-Based Character Control* ✓
+- **摘要**:任务目标用简单奖励,风格由动作片段数据指定;对抗判别器输出"风格奖励",无需手写模仿目标;能吃大数据集。https://arxiv.org/abs/2104.02180
+- **能回答什么 / 阶段**:阶段 3——没手写正则项时怎么让步态自然;知识库里大量人形项目基于它。
+- **注意**:面向仿真角色,需要动作数据;microduck 上游没用。
 
 ## 五、加新条目的格式
 
-一行写清三件事:**来源是什么、链接、它能回答什么问题**。
-第三项最重要——没有它,这个文件过几个月就退化成一堆记不清为什么存的链接。
+按上面的四项写:**是什么**(类型、作者 / 机构、时间、可信度)、**摘要**(3–5 个具体要点)、**能回答什么 / 阶段**、**注意**(局限、版本、口径)。
+"能回答什么"最重要——没有它,这个文件过几个月就退化成一堆记不清为什么存的链接。总览表按需加一行。

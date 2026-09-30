@@ -71,6 +71,8 @@ Windows ↔ WSL 之间可直接走 `/mnt/d/robot/robolab/...`(WSL 里访问 D �
    **绝不把 `/srv/workspace/...` 写进交付物**(脚本、文档、README)。
 3. **沙箱的 `src/` 就是三处应有的上游状态**(由 `upstream.repos` + `patches/` 唯一确定)。
    要知道相对上游改了什么:`git -C src/microduck_rl status`。
+   ⚠️ `src/mjlab` 只是参考源码:训练实际用的是 `.venv` 里从 PyPI 装的 **mjlab 1.3.0**(`microduck_rl` 写死了版本),
+   `upstream.repos` 已把这个 clone 锁到 v1.3.0 与之对齐;rsl_rl 5.0.1 没有本地 clone,源码在 `.venv` 里。**核实框架行为时以这两个版本为准。**
    真机上如果出现这之外的改动,那是临时实验,**让用户把现状发过来再看,不要假设**。
 4. ⚠️ **换行不统一**:三个 clone 里 git 跟踪的文件是 **CRLF**(Windows 侧 `core.autocrlf` 检出的),
    根目录自写的 `.ps1`/`.md` 是 LF,训练日志是 CRLF。沙箱的三个 clone 已设 `core.autocrlf=input`,
