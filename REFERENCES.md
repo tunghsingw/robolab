@@ -111,6 +111,12 @@
 - **能回答什么 / 阶段**:阶段 0–3 的主战场。
 - **注意**:导出必须走 `scripts/export.py`;上游 develop 分支活跃,升级前看 diff。
 
+### 9. TensorBoard README — https://github.com/tensorflow/tensorboard/blob/master/README.md ✓
+- **是什么**:TensorBoard 官方仓库说明(Google),一手资料。
+- **摘要**:`--logdir` 会**递归**遍历整棵目录树,凡是含 tfevents 曲线文件的子目录都当成一个 run 载入;所以可以指到单个 run、任务目录,或更上层的任意祖先目录。多个互不相干的目录可用 `--logdir_spec 名字1:路径1,名字2:路径2`,但官方不推荐(部分功能不可用),建议改用符号链接把它们归到一个目录下。
+- **能回答什么 / 阶段**:阶段 0–1——`--logdir` 该指到哪一级、怎么把多次训练叠在一张图上对比。
+- **注意**:目录越高、run 越多,启动时扫描越慢,左侧列表也越长。
+
 ## 三、领域综述与关键资料
 
 ### 1. 腿足机器人模仿学习综述 — Frontiers in Robotics and AI, 2025 ✓
