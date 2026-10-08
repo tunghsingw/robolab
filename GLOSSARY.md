@@ -57,7 +57,7 @@
 | AMP | Adversarial Motion Priors | 对抗运动先验 | 让一个判别器看"动作数据 vs 策略动作",分不清就给策略加分——用数据定义"什么叫走得自然",替代手写步态正则项(Peng et al. 2021)。人形项目里很常见 | ✓ |
 | — | Actuator Network | 执行器网络 | 用真机采的数据训一个小神经网络当执行器模型,代替解析摩擦/电机模型(Hwangbo et al. 2019)。和 BAM 目标相同、手段不同:BAM 是辨识解析模型的参数 | ✓ |
 | — | Loco-manipulation | 移动操作 | 边走边操作(搬着东西走路),把运动控制和操作缝起来。当前热点 | ✓ |
-| — | Zero-shot Transfer | 零样本迁移 | 仿真训完直接上真机,不做任何真机微调 | ✓ |
+| — | Zero-shot Transfer | 零样本迁移 | 仿真训完直接上真机,不做任何真机微调。**只说明策略没在真机上继续学习**,不代表团队没做过硬件测量和模型校准 | ✓ |
 | — | Termination | 终止条件 | 回合提前结束的规则,如 `fell_over`(躯干倾斜超 70°)。训练日志里 `Episode_Termination/<名字>` 记的是**这一批重置的回合里有几个是因它结束的**,看比例不看绝对值 | ✓源码 |
 | — | External Push / Perturbation | 抗扰推力 | 训练时每隔几秒随机给躯干一个速度冲击,逼策略学会被推不倒。本项目训练时 3–6 s 一次、±0.3 m/s;**play 模式改成 0.5–1 s 一次**,看回放时踉跄多半是刚被推了 | ✓源码 |
 
@@ -121,7 +121,7 @@
 | MuJoCo Warp | — | GPU 加速版 MuJoCo,让几千个环境并行跑在显卡上(底座是 NVIDIA Warp,一个写 GPU kernel 的 Python 库) | ✓ |
 | mjlab | — | 建在 MuJoCo Warp 上的 RL 训练框架,本项目的直接依赖 | ✓源码 |
 | PhysX | — | NVIDIA 的物理引擎,硬接触模型。Isaac Sim / Isaac Lab 底层用它 | ✓ |
-| Isaac Sim | — | NVIDIA 基于 Omniverse 的机器人仿真平台(渲染 + PhysX 物理);Isaac Lab 是建在它上面的 RL 训练框架 | ✓ |
+| Isaac Sim | — | NVIDIA 基于 Omniverse 的机器人仿真平台(渲染 + PhysX 物理 + 传感器)。Isaac Lab 2.x 跑在它上面;3.0 起 Isaac Lab 可以不装它(改用 Newton 等后端) | ✓ |
 | Isaac Lab | — | NVIDIA 的机器人学习框架(和 mjlab 同一层:组织观测、动作、奖励、随机化、训练)。2.x 跑在 Isaac Sim 上;3.0(2026-09 早期访问版)把物理后端拆开,可选 PhysX 或 Newton/MuJoCo Warp,部分流程不用装 Isaac Sim | ✓ |
 | MJX | MuJoCo XLA | 用 JAX 实现的 GPU / TPU 版 MuJoCo,比 MuJoCo Warp 早;功能不全(如不支持 flex 软体) | ✓ |
 | MuJoCo Playground | — | Google DeepMind 基于 MJX 的开源机器人学习环境集(RSS 2025),含四足、人形、机械臂、灵巧手任务和真机部署实验 | ✓ |
