@@ -168,7 +168,7 @@ microduck 是教具不是终点。
 | `GLOSSARY.md` | **人 + agent 共用** | 技术名词:中英对照、简称全称、一句话中文解释 | **名词定义** |
 | `REFERENCES.md` | **人 + agent 共用** | 外部资料清单,每条注明"它能回答什么" | **外部信息出处** |
 | `CLAUDE.md` | Claude Code | 只有一行 `@AGENTS.md` | 无(纯指针) |
-| `experiments/stage*_*.md` | 人 + agent | 各阶段的课程与记录本,见第五节 | 各阶段学习内容;**所有命令以 `stage0_commands.md` 为准** |
+| `experiments/stage*_*.md` | 人 + agent | 各阶段的课程、记录本与结构图,见第五节 | 各阶段学习内容;**所有命令以 `stage0_commands.md` 为准** |
 | `experiments/runs.md`、`policies/README.md` | 人 + agent | 训练存档清单 / ONNX 策略清单 | 有哪些存档、哪些策略、各自来源 |
 
 `GLOSSARY.md` 和 `REFERENCES.md` 是**双方共同查看的认知基线**——统一词汇、统一信息来源,
@@ -188,13 +188,13 @@ microduck 是教具不是终点。
 
 各阶段练什么、产出什么,见 `README.md`「实践路线」;是否完成,以 `README.md`「进度记录」为准。本表只管文件。
 
-| 阶段 | 课程(学什么) | 记录本(用户的观察与结论) |
-|---|---|---|
-| 0 会用命令 | `experiments/stage0_commands.md` | 无(练习结果直接在对话里核对) |
-| 1 学会看 | `experiments/stage1_observe.md` | `experiments/stage1_checkpoint_behavior_map.md` |
-| 2 学会改 | `experiments/stage2_reward_ablation.md`(目前是大纲,开课前按下面的写作规则重写) | 重写时拆出 `experiments/stage2_ablation_records.md` |
-| 3 学会定义任务 | 待建 | 待建 |
-| 4 换机器人 | 待建 | 待建 |
+| 阶段 | 课程(学什么) | 记录本(用户的观察与结论) | 结构图(复习用) |
+|---|---|---|---|
+| 0 会用命令 | `experiments/stage0_commands.md` | 无(练习结果直接在对话里核对) | `experiments/stage0_map.md` |
+| 1 学会看 | `experiments/stage1_observe.md` | `experiments/stage1_checkpoint_behavior_map.md` | `experiments/stage1_map.md` |
+| 2 学会改 | `experiments/stage2_reward_ablation.md`(目前是大纲,开课前按下面的写作规则重写) | 重写时拆出 `experiments/stage2_ablation_records.md` | 课程定稿后建 |
+| 3 学会定义任务 | 待建 | 待建 | 待建 |
+| 4 换机器人 | 待建 | 待建 | 待建 |
 
 每个阶段的课程开头必须写明**核心目标**和**完成标准**(阶段 0、1 已如此)。
 
@@ -219,4 +219,5 @@ microduck 是教具不是终点。
 7. **命令只写在阶段 0**:新增或修改命令先改 `stage0_commands.md`,其他文件只链接。导出路径指到根目录 `policies\`(第二节第 10 条)。唯一例外是 `INSTALL.md`:它的定位是"不依赖任何现有文件",安装验证用的命令可以保留在它里面。
 8. **英文界面词配中文**,每节第一次出现时写"英文(中文)"。
 9. **可迁移性标注**:概念标【换机器人也一样】或【microduck 特有】(第二节"怎么带用户学"第 3 条)。
+10. **每个阶段配一张结构图**:`experiments/stageN_map.md`,只放一张 Mermaid 流程图和几行读法,供用户复习时一眼回忆全阶段;节点标课程章节号(§N),细节回课程查。课程开头留一行链接指向它。**课程改动涉及图里的内容时,同步改图。**
 
