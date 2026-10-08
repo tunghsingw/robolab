@@ -84,6 +84,7 @@
 | — | Soft Contact / Hard Contact | 软接触 / 硬接触 | 物理引擎处理"两物体碰上"的两种思路。软接触(MuJoCo、MuJoCo Warp、Genesis)允许微小穿透,用类似弹簧阻尼把物体推回;硬接触(PhysX)把不穿透当刚性约束硬性满足。同一场景两类引擎的接触力峰值、穿透量可以差一个数量级 | ✓ |
 | — | Penetration | 穿透量 | 软接触下两个碰撞体互相"陷进去"的深度,通常毫米级。MuJoCo 里由 `solref` 的时间常数决定,时间常数越大越软、穿透越深 | ✓ |
 | — | Timestep Sensitivity | 步长敏感性 | 把物理仿真步长减半重跑,结果变了多少。变化大说明结论依赖数值设置而非物理本身;跨引擎对比和调参前都该先做这项检查 | ✓ |
+| — | Generalized Coordinates / Maximal Coordinates | 广义坐标(关节坐标)/ 最大坐标(笛卡尔坐标) | 物理引擎描述机器人状态的两种方式。广义坐标只记关节角(N 个关节 ≈ N 个数),关节天然不会脱开;最大坐标给每个刚体都记 6 个自由度,再用约束把它们"拴"在一起,约束只是数值上满足,会漂移。**机器人仿真偏好前者**(MuJoCo、Bullet multibody、PhysX articulation),游戏引擎传统上用后者 | ✓ |
 | — | Keyframe | 关键帧 | MJCF 里预存的一组关节姿态(qpos),如 STAND / SIT。用作初始姿态或参考姿态 | ✓ |
 | — | System Identification (SysID) | 系统辨识 | 在真机上采数据、反推模型参数(摩擦、增益、惯量)。**换机器人时最费工的一步** | ✓ |
 | — | Swing / Stance Phase | 摆动相 / 支撑相 | 步态的两个阶段:脚在空中往前摆 = 摆动相,脚踩地撑住身体 = 支撑相。`air_time` 奖励量的就是摆动相时长 | ✓ |
@@ -115,6 +116,7 @@
 | Isaac Sim | — | NVIDIA 基于 Omniverse 的机器人仿真平台(渲染 + PhysX 物理);Isaac Lab 是建在它上面的 RL 训练框架 | ✓ |
 | Newton | — | NVIDIA、Google DeepMind、Disney Research 联合发起的开源 GPU 物理引擎框架(Linux 基金会托管),底座是 Warp,可以把 MuJoCo Warp 当刚体求解器,再耦合柔性体求解器 | ✓ |
 | Genesis | — | 开源 GPU 物理仿真平台,自带刚体、有限元(FEM)等多种求解器,刚体部分采用 MuJoCo 风格软接触 | ✓ |
+| Bullet / PyBullet | — | 开源物理引擎,出身游戏和影视,后来加了广义坐标的 multibody 模式;PyBullet 是它的 Python 接口,MuJoCo 开源前机器人 RL 常用。网页 3D 引擎常用的 ammo.js 就是 Bullet 编译到浏览器的版本 | ✓ |
 | rsl_rl | Robotic Systems Lab – RL | 苏黎世联邦理工(ETH)机器人系统实验室的 RL 库,提供 PPO 实现。腿足机器人 RL 的常用底座 | ✓ |
 | onshape-to-robot | — | Rhoban 的工具:通过 Onshape API 把 CAD 装配体导出成 URDF / SDF / MJCF。本项目每个 `config_mjcf_*.json` 就是它的配置 | ✓ |
 | vcs / vcstool | version control system tool | ROS 工作区的多仓库管理工具:从一个 `.repos` 清单文件(YAML)一次 clone / 更新多个上游仓库到指定目录,命令形如 `vcs import src < file.repos`。**本项目用它在 `src/` 下按 `upstream.repos` 拉 microduck / microduck_rl / mjlab 三个上游** | ✓ |

@@ -225,6 +225,12 @@
 - **能回答什么 / 阶段**:阶段 3——没手写正则项时怎么让步态自然;知识库里大量人形项目基于它。
 - **注意**:面向仿真角色,需要动作数据;microduck 上游没用。
 
+### 6. Erez、Tassa、Todorov 2015,*Simulation tools for model-based robotics: Comparison of Bullet, Havok, MuJoCo, ODE and PhysX* — ICRA 2015 ✓
+- **是什么**:会议论文(https://roboti.us/lab/papers/ErezICRA15.pdf),作者是 MuJoCo 的开发者,**有立场偏向**。
+- **摘要**:游戏引擎(PhysX、Bullet、Havok、ODE)传统上用最大坐标 + 数值约束表示关节,机器人引擎用广义坐标;在关节型机器人上,广义坐标在速度和精度上明显占优(Bullet 的 multibody 模式比 MuJoCo 慢约 3 倍,但仍胜过所有最大坐标引擎);大量自由漂浮的刚体则是最大坐标更合适。
+- **能回答什么 / 阶段**:"机器人仿真引擎和游戏 / 网页 3D 引擎的物理有什么不同"、为什么本项目用 MuJoCo 而不是游戏引擎。领域地图、阶段 4 选仿真器。
+- **注意**:2015 年的结论,之后 PhysX 4 起加了广义坐标的 articulation(Isaac Sim 用的就是它),Bullet 也有了 multibody;不要拿它判断今天各引擎的优劣,最新横比看三·10。
+
 ## 五、加新条目的格式
 
 按上面的四项写:**是什么**(类型、作者 / 机构、时间、可信度)、**摘要**(3–5 个具体要点)、**能回答什么 / 阶段**、**注意**(局限、版本、口径)。
