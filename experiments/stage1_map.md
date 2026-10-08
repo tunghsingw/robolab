@@ -6,7 +6,7 @@ flowchart TB
   bg["<b>§一 先知道</b><br/>回合 · 指令 · 课程 · 推力<br/>回放 ≠ 训练"]
   health{"<b>§三 训练本身健康吗</b><br/>Policy · Loss · Perf"}
   play["<b>§二 回放</b><br/>标准观察流程<br/>速度箭头 · 奖励条"]
-  curve["<b>§三 曲线面板</b><br/>SCALARS 页 · 9 组<br/>七条规矩"]
+  curve["<b>§三 曲线面板</b><br/>SCALARS 看走势<br/>TIME SERIES 按步读齐<br/>9 组 · 七条规矩"]
   rew["<b>§四 奖励与物理量</b><br/>Episode_Reward = 得分<br/>Metrics = 物理量"]
   q1["<b>§五 ① 站得住吗</b><br/>回合长度<br/>time_out > fell_over"]
   q2["<b>② 听指令吗</b><br/>箭头重合 · error_vel"]
