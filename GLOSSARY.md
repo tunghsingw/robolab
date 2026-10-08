@@ -90,6 +90,7 @@
 | — | contype / conaffinity | 碰撞位掩码 | MuJoCo 的碰撞过滤规则:两个碰撞体的位掩码按位与后非零才碰撞。用它实现"只和自己碰、不和地面碰"之类的分组 | ✓ |
 | — | Soft Contact / Hard Contact | 软接触 / 硬接触 | 物理引擎处理"两物体碰上"的两种思路。软接触(MuJoCo、MuJoCo Warp、Genesis)允许微小穿透,用类似弹簧阻尼把物体推回;硬接触(PhysX)把不穿透当刚性约束硬性满足。同一场景两类引擎的接触力峰值、穿透量可以差一个数量级 | ✓ |
 | — | Penetration | 穿透量 | 软接触下两个碰撞体互相"陷进去"的深度,通常毫米级。MuJoCo 里由 `solref` 的时间常数决定,时间常数越大越软、穿透越深 | ✓ |
+| — | Soft Body (deformable) | 软体 / 可变形体 | 物体**自身**会变形(海绵、布、线缆)。和"软接触"别混:软接触只说接触处允许压入,物体本身仍是刚体;软体要算整个物体怎么被挤扁、弯曲。MuJoCo 用 flex 元素建模,Genesis 用 FEM / MPM 求解器 | ✓ |
 | — | Timestep Sensitivity | 步长敏感性 | 把物理仿真步长减半重跑,结果变了多少。变化大说明结论依赖数值设置而非物理本身;跨引擎对比和调参前都该先做这项检查 | ✓ |
 | — | Generalized Coordinates / Maximal Coordinates | 广义坐标(关节坐标)/ 最大坐标(笛卡尔坐标) | 物理引擎描述机器人状态的两种方式。广义坐标只记关节角(N 个关节 ≈ N 个数),关节天然不会脱开;最大坐标给每个刚体都记 6 个自由度,再用约束把它们"拴"在一起,约束只是数值上满足,会漂移。**机器人仿真偏好前者**(MuJoCo、Bullet multibody、PhysX articulation),游戏引擎传统上用后者 | ✓ |
 | — | Keyframe | 关键帧 | MJCF 里预存的一组关节姿态(qpos),如 STAND / SIT。用作初始姿态或参考姿态 | ✓ |
@@ -121,6 +122,9 @@
 | mjlab | — | 建在 MuJoCo Warp 上的 RL 训练框架,本项目的直接依赖 | ✓源码 |
 | PhysX | — | NVIDIA 的物理引擎,硬接触模型。Isaac Sim / Isaac Lab 底层用它 | ✓ |
 | Isaac Sim | — | NVIDIA 基于 Omniverse 的机器人仿真平台(渲染 + PhysX 物理);Isaac Lab 是建在它上面的 RL 训练框架 | ✓ |
+| Isaac Lab | — | NVIDIA 的机器人学习框架(和 mjlab 同一层:组织观测、动作、奖励、随机化、训练)。2.x 跑在 Isaac Sim 上;3.0(2026-09 早期访问版)把物理后端拆开,可选 PhysX 或 Newton/MuJoCo Warp,部分流程不用装 Isaac Sim | ✓ |
+| MJX | MuJoCo XLA | 用 JAX 实现的 GPU / TPU 版 MuJoCo,比 MuJoCo Warp 早;功能不全(如不支持 flex 软体) | ✓ |
+| MuJoCo Playground | — | Google DeepMind 基于 MJX 的开源机器人学习环境集(RSS 2025),含四足、人形、机械臂、灵巧手任务和真机部署实验 | ✓ |
 | Newton | — | NVIDIA、Google DeepMind、Disney Research 联合发起的开源 GPU 物理引擎框架(Linux 基金会托管),底座是 Warp,可以把 MuJoCo Warp 当刚体求解器,再耦合柔性体求解器 | ✓ |
 | Genesis | — | 开源 GPU 物理仿真平台,自带刚体、有限元(FEM)等多种求解器,刚体部分采用 MuJoCo 风格软接触 | ✓ |
 | Bullet / PyBullet | — | 开源物理引擎,出身游戏和影视,后来加了广义坐标的 multibody 模式;PyBullet 是它的 Python 接口,MuJoCo 开源前机器人 RL 常用。网页 3D 引擎常用的 ammo.js 就是 Bullet 编译到浏览器的版本 | ✓ |
