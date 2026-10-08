@@ -62,6 +62,7 @@
 | DoF | Degrees of Freedom | 自由度 | 能独立运动的维度数。microduck 14 个舵机 = 14 DoF | ✓ |
 | IMU | Inertial Measurement Unit | 惯性测量单元 | 测角速度和加速度的传感器。**测不准线速度**(积分会漂)——这就是本项目 actor 观测里没有线速度的原因 | ✓ |
 | PD | Proportional-Derivative | 比例-微分控制 | 最常见的底层位置控制律。策略输出关节目标位置,PD 环负责跟上 | ✓ |
+| FF | Feedforward | 前馈 | 不看反馈、按预先设计好的指令直接输出(如一条参考关节轨迹)。和 RL 结合时常见做法是"前馈给出大致怎么动,策略只学修正量",能大幅缩短训练 | ✓ |
 | URDF | Unified Robot Description Format | 统一机器人描述格式 | ROS 生态的机器人模型格式(XML) | ✓ |
 | MJCF | MuJoCo Modeling XML File | MuJoCo 模型格式 | MuJoCo 原生模型格式(XML),URDF 的替代。本项目机器人模型用它。官方文档不展开这个缩写,展开法出自 NVIDIA Isaac Sim 文档 | ✓ |
 | ZMP | Zero Moment Point | 零力矩点 | 传统双足步态规划的核心判据。学习方法出现前的主流路线 | ✓ |
@@ -117,6 +118,8 @@
 | Newton | — | NVIDIA、Google DeepMind、Disney Research 联合发起的开源 GPU 物理引擎框架(Linux 基金会托管),底座是 Warp,可以把 MuJoCo Warp 当刚体求解器,再耦合柔性体求解器 | ✓ |
 | Genesis | — | 开源 GPU 物理仿真平台,自带刚体、有限元(FEM)等多种求解器,刚体部分采用 MuJoCo 风格软接触 | ✓ |
 | Bullet / PyBullet | — | 开源物理引擎,出身游戏和影视,后来加了广义坐标的 multibody 模式;PyBullet 是它的 Python 接口,MuJoCo 开源前机器人 RL 常用。网页 3D 引擎常用的 ammo.js 就是 Bullet 编译到浏览器的版本 | ✓ |
+| Unity ML-Agents | — | Unity 官方的强化学习工具包:Unity 场景当环境,Python 侧训练(提供 PPO 等算法),导出 ONNX 回 Unity 运行。物理用 Unity 内置的 PhysX,机器人关节用 ArticulationBody(PhysX 的广义坐标 articulation) | ✓ |
+| 格物 / Unity RL Playground | Gewu | 上海大学叶林奇团队基于 Unity ML-Agents 做的腿足机器人 RL 平台,导入 URDF 后"一键训练",已捐给 OpenLoong 开源社区(GitHub `loongOpen/Unity-RL-Playground`) | ✓ |
 | rsl_rl | Robotic Systems Lab – RL | 苏黎世联邦理工(ETH)机器人系统实验室的 RL 库,提供 PPO 实现。腿足机器人 RL 的常用底座 | ✓ |
 | onshape-to-robot | — | Rhoban 的工具:通过 Onshape API 把 CAD 装配体导出成 URDF / SDF / MJCF。本项目每个 `config_mjcf_*.json` 就是它的配置 | ✓ |
 | vcs / vcstool | version control system tool | ROS 工作区的多仓库管理工具:从一个 `.repos` 清单文件(YAML)一次 clone / 更新多个上游仓库到指定目录,命令形如 `vcs import src < file.repos`。**本项目用它在 `src/` 下按 `upstream.repos` 拉 microduck / microduck_rl / mjlab 三个上游** | ✓ |
