@@ -22,6 +22,8 @@
 | PPO | Proximal Policy Optimization | 近端策略优化 | 机器人 RL 最常用的算法,稳定好调。**本项目实际用的就是它** | ✓ |
 | IL | Imitation Learning | 模仿学习 | 从示教数据学,绕开奖励设计。操作类任务的主力 | ✓ |
 | BC | Behavior Cloning | 行为克隆 | IL 里最直接的一种:把"状态→动作"当监督学习训 | ✓ |
+| — | Covariate Shift (compounding error) | 协变量偏移 / 误差累积 | 行为克隆的根本毛病:策略只在专家走过的状态上学过,一旦自己犯个小错走到没见过的状态,就不知道怎么办,错误越滚越大。**RL 天然没有这个问题**——它本来就在自己走出来的状态上学 | ✓ |
+| DAgger | Dataset Aggregation | 数据集聚合 | 治协变量偏移的经典办法(Ross 等 2011):让策略自己跑,在它实际到达的状态上请专家标注"这里该怎么做",并入数据集再训练,反复迭代 | ✓ |
 | MPC | Model Predictive Control | 模型预测控制 | 传统控制:建模型、在线滚动求解最优控制。**没被 RL 取代**,常做底层控制、安全兜底、示教数据源 | ✓ |
 | WBC | Whole-Body Control | 全身控制 | 同时协调所有关节达成多个目标(平衡 + 动作)的控制框架 | ✓ |
 | MDP | Markov Decision Process | 马尔可夫决策过程 | RL 的数学框架:状态、动作、奖励、状态转移。**"定义一个任务"本质就是定义一个 MDP** | ✓ |
