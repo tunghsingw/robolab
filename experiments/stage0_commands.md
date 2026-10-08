@@ -425,14 +425,25 @@ cp -rn logs/rsl_rl /mnt/d/robot/robolab/src/microduck_rl/logs/
 ## 九、看曲线:曲线面板 TensorBoard
 
 ```powershell
-uv run tensorboard --logdir logs\rsl_rl\velocity\2026-09-15_12-26-40_velocity
+uv run tensorboard --logdir logs\rsl_rl\velocity\2026-09-28_21-50-30_velocity
 ```
 
 浏览器打开 **`http://localhost:6006`**。
 
 - `--logdir` 会**逐层往下找**所有含曲线数据的子目录,每个算一个 run,列在左侧勾选。指到**一个 run 目录** = 只看这次训练;指到**任务目录**(如 `logs\rsl_rl\velocity`)= 这个任务的所有训练叠在一张图上(最常用);指得更高也行,但 run 太多会慢、会乱。
 - 它只读曲线数据文件,不跑仿真。后台每 5 秒重新扫描一次,训练中的新数据、开着面板期间新开的训练都会被发现,**刷新页面**就能看到,不用重启。
+- **大 run 刚打开要等**:5 万轮的曲线数据要读好几分钟,这期间先显示出来的图只画到一部分(横轴停在几千轮),之后不会自己补全。横轴没到最后一轮,就等一会儿再点页面右上角的刷新按钮(⟳)。
 - 停止:终端 Ctrl+C。
+
+### 保留全部数据点
+
+曲线面板默认**每条曲线只保留 1000 个点**(随机抽,最后一轮一定保留)。几千轮以内的 run 基本不受影响;5 万轮的 run 平均 50 轮才留一个点,想读的那一轮可能根本不在图上。要读某一轮的准确值,启动时加一个选项:
+
+```powershell
+uv run tensorboard --logdir logs\rsl_rl\velocity\2026-09-28_21-50-30_velocity --samples_per_plugin scalars=0
+```
+
+`scalars=0` 表示曲线一个点都不丢。代价是读取更慢、更占内存,所以只在需要读准确值时用,平时看走势用上面的默认方式。
 
 曲线分组和读法见阶段 1(`stage1_observe.md` 第三节)。
 

@@ -173,5 +173,5 @@ MuJoCo 窗口里其它字母键是查看器自带的可视化开关,只改显示
 - [x] 环境搭建完成:Windows 推理、Windows 与 WSL 训练、网络、GitHub 仓库三处 clone(过程与坑见 `INSTALL.md`)
 - [x] 第一个自己训练的步态:WSL `2026-09-15_12-26-40`(0 → 12500 轮)+ 续训 `2026-09-16_09-07-17`(→ 62499);Windows 从 0 再训一次 `2026-09-28_21-50-30`(→ 15000 轮左右)
 - [x] 阶段 0 会用命令:`experiments/stage0_commands.md` 第十二节 7 道练习已做完
-- [ ] 阶段 1 学会看:课程 `experiments/stage1_observe.md`,记录本 `experiments/stage1_checkpoint_behavior_map.md`;练习 1–6 待做
+- [ ] 阶段 1 学会看:课程 `experiments/stage1_observe.md`,记录本 `experiments/stage1_checkpoint_behavior_map.md`;练习 1–8 待做
 - [ ] 阶段 2 学会改:大纲已定(`experiments/stage2_reward_ablation.md`),开课前按写作规则重写

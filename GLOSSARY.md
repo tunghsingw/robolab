@@ -36,6 +36,12 @@
 | — | Task (registered task) | 任务(注册任务) | 一个"环境配置 + 算法配置"的组合,用任务 ID 调用,如 `Mjlab-Velocity-Flat-MicroDuck`。**换任务 = 换 ID,训练命令不变** | ✓源码 |
 | PPO | Proximal Policy Optimization | 近端策略优化 | 机器人 RL 最常用的算法,稳定好调。**本项目实际用的就是它** | ✓ |
 | — | Actor-Critic | 演员-评论家 | RL 架构:actor 输出动作;critic 估计"从这个状态往后大概还能拿多少分"(价值),用来判断某个动作比平均水平好还是差,从而决定 actor 往哪个方向改 | ✓ |
+| — | Exploration | 探索 / 试探 | 训练时故意在策略输出上加随机扰动,才有机会碰到比现在更好的做法。扰动先大后小是正常走向 | ✓ |
+| — | Action Std (Policy Std) | 动作标准差 | 探索扰动的大小。曲线面板 `Policy/mean_std`;本项目起点 1.0,长训练后约 0.2 | ✓源码 |
+| — | Policy Entropy | 策略熵 | 用一个数衡量"动作有多随机",和动作标准差说的是同一件事。高斯策略的熵可以是负数(标准差 < 0.24 时每个关节就为负)。**熵骤降、同时主任务项也掉 = 过早放弃探索** | ✓源码 |
+| — | Value Loss | 价值损失 | critic 预测"往后能拿多少分"的误差,曲线 `Loss/value`。平稳或缓降是正常的,持续暴涨说明奖励或环境变了 | ✓源码 |
+| — | Surrogate Loss | 替代损失 | PPO 用来更新 actor 的主损失,曲线 `Loss/surrogate`。数值本身不直观,不用解读 | ✓源码 |
+| KL | Kullback–Leibler Divergence | KL 散度 | 衡量"更新前后策略差了多少"。本项目 PPO 用它自动调学习率:一次更新 KL 超过 0.02 就把学习率除以 1.5,低于 0.005 就乘以 1.5,所以 `Loss/learning_rate` 呈锯齿 | ✓源码 |
 | — | Privileged Information | 特权信息 | 仿真里拿得到、真机拿不到的量(躯干线速度、触地力)。只给 critic 用 | ✓源码 |
 | — | Asymmetric Actor-Critic | **非对称**演员-评论家 | critic 比 actor 多看"特权信息",部署时只跑 actor。本项目 critic 76 维 vs actor 61 维 | ✓源码 |
 | — | Curriculum Learning | 课程学习 | 从易到难逐步加难度/加约束。本项目有 7 项 | ✓源码 |
