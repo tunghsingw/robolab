@@ -1,6 +1,6 @@
 # 阶段 1 结构图:学会看
 
-复习用:一张图回忆阶段 1 的知识结构。图里的「§五」指课程 [`stage1_observe.md`](stage1_observe.md) 第五节,细节回那里查。VS Code 里怎么看,见 [`stage0_map.md`](stage0_map.md) 开头。
+复习用:一张图回忆阶段 1 的知识结构。图里的「§五」指课程 [`stage1_observe.md`](stage1_observe.md) 第五节,细节回那里查。
 
 ```mermaid
 flowchart TB
