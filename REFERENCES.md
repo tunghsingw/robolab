@@ -27,6 +27,7 @@
 | 换一台别的机器人,别人怎么配训练环境 | 三·9 知识库的 Locomotion 与工程部署分页 | 4 |
 | 不同物理引擎(MuJoCo / MuJoCo Warp / PhysX / Genesis)差多少、换引擎评估要查什么 | 三·10 | 2、4 |
 | 别的"导入 URDF → 一键训练"平台怎么做(格物 / Unity ML-Agents)、前馈 + RL | 三·11 | 3、4 |
+| "让 AI 编程智能体开发机器人"(Agentic Robotics)、逆物理 / Real2Sim 自动化 | 三·12 | 领域地图、4 |
 
 ## 一、项目内部(最优先,不用联网)
 
@@ -204,6 +205,15 @@
 - **摘要**:建在 Unity ML-Agents 上(物理是 Unity 的 PhysX,关节用 ArticulationBody);流程 = 把 URDF 放进 Unity → 锁掉腿以外的关节 → 设机器人类型、观测 / 动作维度 → `mlagents-learn` 训练 → 导出 `gewu.onnx`。腿部关节加**前馈参考动作**(髋、膝、踝),策略在其上学习,符号要按各机器人关节方向手改。README 称示例约 200 万步够用,URDF 测试约 40 万步、2–5 分钟出效果;论文称训练不需要 GPU。支持青龙、宇树 G1/H1/Go2、加速进化 T1、众擎 SA01、Tinker 等。
 - **能回答什么 / 阶段**:另一种"导入新机器人 → 训练"的流水线长什么样,和 mjlab 对照;前馈 + RL 的做法。阶段 3、4 参考。
 - **注意**:论文摘要只说"有潜力"迁移到真机;README 里 sim2real 目前**只支持 Go2**(ROS2 + Unitree_ROS2,仅 Ubuntu 20/22)。报道里"自动优化奖励函数""一套代码适配百款机器人""打破国外垄断"在论文和 README 里找不到对应依据;README 没写奖励函数怎么设计。
+
+### 12. Ken Goldberg《Goosebumps: a Paradigm Shift is Occurring in Robotics》+ GaP 论文 — 2026-09 ✓(观点文章 + 预印本)
+- **是什么**:伯克利教授、Ambi Robotics 联合创始人 Ken Goldberg 在 X 上的长文(https://x.com/Ken_Goldberg/status/2100986412762087909;中文整理:微信公众号 SourceMind《智能体机器人学(Agentic Robotics,AR)》https://mp.weixin.qq.com/s/ngf6utVMsQ0BX18PgeHmqQ)。配套论文 GaP(arXiv 2607.05369,伯克利 / NVIDIA / Bosch,CoRL 2026 待发表;项目页 https://graph-robots.github.io/gap/ ,代码 github.com/graph-robots/graph-as-policy)。**观点文章是个人判断,带作者自家创业公司立场**。
+- **摘要**:
+  - 机器人开发的三种文化:基于模型的手工工程(快、可靠、每个新任务都要大量人工)、无模型 / VLA(通用但吃数据、可靠性不足)、AR(LLM 编程智能体组合模块化技能库,离线在仿真里测试迭代,导出可解释的轻量程序)。
+  - GaP:策略 = 由技能节点组成的计算图;多个编程智能体分别改节点,在 Isaac 仿真里并行试跑、定位失败节点再修改。真机抓放类任务 18/20–28/30;单个 LLM 直接写整段代码(没有图)成功率为零。局限:节拍仍慢于工业要求、以准静态抓放为主。
+  - 逆物理:给智能体一段真机视频 + Newton 仿真调参工具,一小时内重建出含海绵形变的仿真;真机失败(推倒金属条,因为视频推不出质量)作为新证据回流修正仿真。
+- **能回答什么 / 阶段**:领域地图——除了 RL 和模仿学习,"让 AI 写机器人程序"这条新路线是什么、边界在哪;阶段 2、4 对照:系统辨识 / Real2Sim 这类费人力的工作,正在被尝试交给智能体。
+- **注意**:GaP 不是 RL,也不做腿足运动,方法不能直接搬到 microduck;作者自己说实时适应有限、能否扩展到人形 / 通用机器人未知;海绵实验是个人叙述,不是系统评测。
 
 ## 四、奠基论文(标题、作者、日期均查自 arXiv 摘要页)
 
