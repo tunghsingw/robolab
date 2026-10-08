@@ -29,6 +29,7 @@
 | 别的"导入 URDF → 一键训练"平台怎么做(格物 / Unity ML-Agents)、前馈 + RL | 三·11 | 3、4 |
 | "让 AI 编程智能体开发机器人"(Agentic Robotics)、逆物理 / Real2Sim 自动化 | 三·12 | 领域地图、4 |
 | 仿真工具怎么分层(物理引擎 / 仿真平台 / 学习框架)、mjlab 和 Isaac Lab 的关系、怎么选型、sim2real 从哪查起 | 三·13 | 领域地图、1、2、4 |
+| 想换个物理引擎训练同一只 microduck 做对照 | 三·14 | 2、4 |
 
 ## 一、项目内部(最优先,不用联网)
 
@@ -227,6 +228,12 @@
   - 选型从任务出发:系统联调看传感器和 ROS 接口;大规模运动控制看并行物理、执行器建模和现成部署项目;视觉操作看物体多样性与渲染;软体看材料模型。再问四个问题:多久跑通第一个任务、失败能否定位、换设备要改什么、有没有人持续维护。
 - **能回答什么 / 阶段**:mjlab 在整个仿真生态里处于哪一层、和 Isaac Lab 是什么关系(领域地图);阶段 1 读训练速度时分清吞吐与延迟;阶段 2 判断 sim2real 问题出在哪一环;阶段 4 选仿真工具、对齐观测动作接口。
 - **注意**:综述性质,观点和归纳以作者为准,具体数字回原始出处(上面三处已核);文中 GPT-6 Astra、PhysTwin 等只是顺带提及,未展开。
+
+### 14. MotrixLab / MotrixSim — https://github.com/Motphys/MotrixLab · https://github.com/Motphys/motrixsim-docs ✓(厂商开源项目)
+- **是什么**:北京谋先飞(Motphys)的开源 RL 训练框架(Apache-2.0)和自研物理引擎 MotrixSim(只以软件形式引用,没有独立论文)。CEO 访谈见微信公众号"商业与生活"《对话谋先飞CEO崔汉青》https://mp.weixin.qq.com/s/NLZ_mxXAsUQb9F5KvAvsrg ——访谈里"比英伟达快 3–10 倍、精度更高"是**自述,没有可查的对比数据**。
+- **摘要**:一次定义环境,在几千个并行环境里训练;算法可选 SKRL、RSL-RL 或内置 FastSAC;训完用插件放进 MuJoCo 做 sim2sim,或经宇树 SDK2 上真机。Linux / Windows,NVIDIA(CUDA)或 AMD(ROCm)显卡,uv 安装。内置 7 个机器人、50+ 任务,**其中有 microduck(14 自由度,任务 `microduck-walk-flat`,README 快速开始就用它)**。RSS 2026 的 GS-Playground(discoverse-dev)用 MotrixSim 做物理后端。
+- **能回答什么 / 阶段**:阶段 2 / 4 的一个现成对照实验——**同一只 microduck 换一个物理引擎 + 训练框架训练**,和 mjlab 训出来的比一比(跨引擎差异见三·10);"学习框架"层除了 Isaac Lab、mjlab 还有谁(三·13)。
+- **注意**:README 没写 microduck 模型从哪来、执行器怎么建模(是否用 BAM),拿来对比前要先核对资产和执行器是否与上游一致,否则比的不是引擎;没有和 Isaac Lab / mjlab 的公开对比数据;项目还在快速变化(2026-10 仍在重构机器人配置)。
 
 ## 四、奠基论文(标题、作者、日期均查自 arXiv 摘要页)
 

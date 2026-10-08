@@ -30,6 +30,7 @@
 | — | sim2sim | 仿真到仿真 | 在一个仿真器里训好的策略,原样放到另一个仿真器里跑一遍(常见是 Isaac Gym / Isaac Lab 训练 → MuJoCo 验证),上真机前的低成本检查:换了物理引擎还能走,才值得冒险上真机。国内整机厂开源的训练链路几乎都带这一步 | ✓ |
 | — | Real2Sim | 现实到仿真 | 和 sim2real 反方向:从真机观测(视频、测量)出发,把仿真里的几何、质量、摩擦等参数调到和现实一致。系统辨识是它的一部分 | ✓ |
 | — | Digital Twin | 数字孪生 | 真实场景或设备在仿真里的对应副本:几何、外观,理想情况下连质量、摩擦、关节都对得上,用来在仿真里训练、评测或预演。很多"数字孪生"只做到外观像,物理参数是估的,用前要看清做到哪一步 | ✓ |
+| — | SimReady Asset | 仿真就绪资产 | 能直接放进仿真用的模型:不只外观对,还带碰撞体、关节、质量、摩擦等物理参数。最早是 NVIDIA 的提法,现在泛指"可以直接仿真"的机器人本体和物体模型 | ✓ |
 | — | Inverse Physics | 逆物理 | Ken Goldberg 2026 年的提法:从对现实的观察反推出仿真需要的全部物理参数,自己说"与 Real2Sim、系统辨识相关但不同"。尚属新提法,不是成熟术语 | ✓ |
 | AR | Agentic Robotics | 智能体机器人学 | Goldberg 2026 年提出的路线:让 LLM 编程智能体离线编写、测试、诊断、迭代模块化机器人程序,导出轻量代码给真机跑;定位在"手工建模工程"和"海量数据学习(RL / VLA)"之间的第三条路 | ✓ |
 | VLA | Vision-Language-Action | 视觉-语言-动作模型 | 输入图像 + 语言指令、输出动作的大模型。操作方向的当前热点 | ✓ |
@@ -128,6 +129,7 @@
 | MuJoCo Playground | — | Google DeepMind 基于 MJX 的开源机器人学习环境集(RSS 2025),含四足、人形、机械臂、灵巧手任务和真机部署实验 | ✓ |
 | Newton | — | NVIDIA、Google DeepMind、Disney Research 联合发起的开源 GPU 物理引擎框架(Linux 基金会托管),底座是 Warp,可以把 MuJoCo Warp 当刚体求解器,再耦合柔性体求解器 | ✓ |
 | Genesis | — | 开源 GPU 物理仿真平台,自带刚体、有限元(FEM)等多种求解器,刚体部分采用 MuJoCo 风格软接触 | ✓ |
+| MotrixSim / MotrixLab | — | 谋先飞(Motphys)的自研物理引擎 / 建在它上面的 RL 训练框架(和 mjlab 同一层,Apache-2.0)。支持 NVIDIA 和 AMD 显卡;内置机器人里**包括 microduck**(`microduck-walk-flat`),训完可放到 MuJoCo 做 sim2sim | ✓ |
 | Bullet / PyBullet | — | 开源物理引擎,出身游戏和影视,后来加了广义坐标的 multibody 模式;PyBullet 是它的 Python 接口,MuJoCo 开源前机器人 RL 常用。网页 3D 引擎常用的 ammo.js 就是 Bullet 编译到浏览器的版本 | ✓ |
 | Unity ML-Agents | — | Unity 官方的强化学习工具包:Unity 场景当环境,Python 侧训练(提供 PPO 等算法),导出 ONNX 回 Unity 运行。物理用 Unity 内置的 PhysX,机器人关节用 ArticulationBody(PhysX 的广义坐标 articulation) | ✓ |
 | 格物 / Unity RL Playground | Gewu | 上海大学叶林奇团队基于 Unity ML-Agents 做的腿足机器人 RL 平台,导入 URDF 后"一键训练",已捐给 OpenLoong 开源社区(GitHub `loongOpen/Unity-RL-Playground`) | ✓ |
