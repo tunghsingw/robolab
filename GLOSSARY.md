@@ -106,6 +106,8 @@
 | — | Kinematic Tree | 运动学树 | 机器人模型的骨架:刚体(body)一节套一节,相邻两节之间用关节连接。microduck 以躯干为根,分出左腿、脖子/头、右腿三条支链 | ✓源码 |
 | — | Proprioception | 本体感知 | 机器人"感觉到自己":关节角度、角速度、姿态。不含外部视觉 | ✓ |
 | IMU | Inertial Measurement Unit | 惯性测量单元 | 测角速度和加速度的传感器。**测不准线速度**(积分会漂)——这就是本项目 actor 观测里没有线速度的原因 | ✓ |
+| — | Intel RealSense D435 | 实感深度相机 | Intel 的主动红外双目深度相机:一对全局快门红外相机 + 红外投射器算深度,另配一个 RGB 相机。深度最佳量程 0.3–3 m,USB 3.0 即插即用,机器人感知最常用的入门传感器 | ✓ |
+| — | Point Cloud | 点云 | 深度相机输出的一堆三维坐标点(每个深度像素对应空间里的一个点)。避障、SLAM、三维重建的基本数据形式 | ✓ |
 | — | Actuator | 执行器 | 舵机/电机。**建准它是小型机器人 sim2real 的生死线** | ✓ |
 | PD | Proportional-Derivative | 比例-微分控制 | 最常见的底层位置控制律。策略输出关节目标位置,PD 环负责跟上 | ✓ |
 | — | Backlash | 齿隙 / 回差 | 齿轮传动的空程间隙。本项目专门为它建了模型和对照任务 | ✓源码 |
@@ -197,3 +199,9 @@
 |---|---|---|:-:|
 | vcs / vcstool | version control system tool | ROS 工作区的多仓库管理工具:从一个 `.repos` 清单文件(YAML)一次 clone / 更新多个上游仓库到指定目录,命令形如 `vcs import src < file.repos`。**本项目用它在 `src/` 下按 `upstream.repos` 拉 microduck / microduck_rl / mjlab 三个上游** | ✓ |
 | vcs2l | — | vcstool 停止维护后的继任 fork,由 ROS 官方组织 ros-infrastructure 维护(官方未给出停更的具体时间点)。命令名仍是 `vcs`,可无缝替换。**本项目 INSTALL.md 装的是它**(`pip install vcs2l`) | ✓ |
+
+### 传感器与驱动
+
+| 名字 | 全称 | 是什么 | 核 |
+|---|---|---|:-:|
+| — | RealSense SDK 2.0 / pyrealsense2 | Intel RealSense 相机的官方开源 SDK(仓库名 librealsense2)。Python 绑定包名 `pyrealsense2`,pip 直接安装;Windows 安装器自带 RealSense Viewer 图形工具;ROS2 驱动包为 `realsense2_camera` | ✓ |

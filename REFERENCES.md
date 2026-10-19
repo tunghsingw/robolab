@@ -40,6 +40,7 @@
 | 操作方向:能不能也用仿真 RL、模仿学习有哪些方法 | 三·4;三·7 | 领域地图 |
 | 工业界怎么把大模型策略和 MPC 分层、动作块实例 | 三·6 | 领域地图 |
 | "让 AI 编程智能体开发机器人"(Agentic Robotics)、逆物理 / Real2Sim 自动化 | 三·10 | 领域地图、4 |
+| 深度相机怎么用、WSL2 里怎么透传 | 二·10 RealSense 官方文档 | 3–4 |
 
 ## 一、项目内部(最优先,不用联网)
 
@@ -131,6 +132,12 @@
 - **摘要**:`--logdir` 会**递归**遍历整棵目录树,凡是含 tfevents 曲线文件的子目录都当成一个 run 载入;所以可以指到单个 run、任务目录,或更上层的任意祖先目录。多个互不相干的目录可用 `--logdir_spec 名字1:路径1,名字2:路径2`,但官方不推荐(部分功能不可用),建议改用符号链接把它们归到一个目录下。后台默认每 5 秒(`--reload_interval`)重新扫描目录并读新数据,新出现的 run 也会被发现;2.3.0 起网页不再自动刷新,要手动刷新或在右上角齿轮里开 Reload data(自动重载)。
 - **能回答什么 / 阶段**:阶段 0–1——`--logdir` 该指到哪一级、怎么把多次训练叠在一张图上对比。
 - **注意**:目录越高、run 越多,启动时扫描越慢,左侧列表也越长。
+
+### 10. Intel RealSense 官方文档与 librealsense — https://github.com/IntelRealSense/librealsense · https://www.realsenseai.com/ ✓
+- **是什么**:Intel RealSense 相机的官方 SDK(开源,即 RealSense SDK 2.0,仓库名 librealsense2),配套官网产品页与 Intel 下载中心。
+- **摘要**:跨 Windows / Linux / macOS;官方 Python 绑定 `pyrealsense2`(PyPI,当前支持 Python 3.10–3.14);Windows 安装器自带 RealSense Viewer 图形工具,可即插即用验证相机;ROS2 驱动包 `realsense2_camera`(`ros2 launch realsense2_camera rs_launch.py`);WSL2 无原生 USB 透传,需 usbipd-win 绑定/附加,并装 udev 规则才能免 root 访问。D435 关键规格:主动红外双目(全局快门),深度最佳量程 0.3–3 m、最远 10 m+,深度最高 1280×720 @ 90 fps,RGB 1920×1080 @ 30 fps(卷帘快门),USB 3.0 Type-C。
+- **能回答什么 / 阶段**:深度相机怎么装、怎么读出彩色/深度流、怎么在 WSL2 里透传使用。阶段 3–4 做带视觉观测的任务(地形感知、避障、录示教数据)时的前置。
+- **注意**:WSL2 里相机 attach 到 WSL 后 Windows 侧程序不可见,要切回 Windows 先 `usbipd detach`;当前 microduck 策略是纯本体感知(61 维观测无视觉),D435 现阶段用不上。
 
 ## 三、领域地图:综述与观点
 
