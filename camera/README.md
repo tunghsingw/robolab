@@ -6,10 +6,14 @@
 
 ```powershell
 cd D:\robot\robolab\camera
-uv venv .venv                        # 建独立环境
-uv pip install -r requirements.txt   # 装 pyrealsense2
+uv venv .venv --python "D:\Programs\Python\Python312\python.exe"   # 必须用系统 Python,原因见下
+uv pip install -r requirements.txt
 .\.venv\Scripts\Activate.ps1
 ```
+
+⚠️ 为什么指定 Python:uv 自带的 managed Python(3.13)**不带 tkinter**,而 `console.py`
+的界面依赖 tkinter。系统 Python 3.12(训练环境同一个)带 tkinter,所以用它建环境。
+`probe.py` / `view.py` / `record.py` 三个脚本不挑解释器,只有 console.py 挑。
 
 ## 三步走
 

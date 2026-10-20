@@ -1,8 +1,10 @@
 pyrealsense2
 opencv-python
+pillow
 
 # 说明:
-# - pyrealsense2:第 1 步 probe.py 用。它的 wheel 自带编译好的 C++ 核心
+# - pyrealsense2:probe/view/record/console 都要用。wheel 自带编译好的 C++ 核心
 #   (librealsense2),Python 侧零硬依赖。
-# - opencv-python:第 2 步 view.py 用(实时窗口显示彩色+深度画面)。
-# - 以后按需再加:numpy(深度数据运算)、matplotlib(画图)。
+# - opencv-python:view.py、console.py 用(实时窗口、伪彩色)。
+# - pillow:console.py 的 tkinter 界面显示画面用(ImageTk)。
+# - 以后按需再加:numpy(深度数据运算,现已随 opencv 装入)、matplotlib(画图)。
