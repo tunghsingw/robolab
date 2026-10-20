@@ -10,6 +10,9 @@ wandb/
 # 控制台日志:大且机器生成。要长期保留的结论摘进 experiments/
 *.log
 
+# 相机采集输出:类比 logs/,数据文件不进仓库
+camera/data/
+
 # 环境
 .venv/
 __pycache__/
