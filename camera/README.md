@@ -17,7 +17,23 @@ uv pip install -r requirements.txt   # 装 pyrealsense2
 |---|---|---|---|
 | ① 验证 | `python probe.py` | 列设备、启双流、打印中心距离和内参 | 出现 D435 + 距离合理 = 全通;报找不到设备 = 查 USB 3.0 蓝色口/换线 |
 | ② 看画面 | `python view.py` | 实时窗口:左彩色、右深度,ESC 退出 | 手靠近镜头深度图变色 = 正常(需先 `uv pip install opencv-python`) |
-| ③ 采数据 | `python record.py` | 存彩色/深度/时间戳到 `data/` | 跑通①②再建这个脚本 |
+| ③ 采数据 | `python record.py [--seconds 10] [--name xx]` | 存彩色 PNG/深度 NPY/时间戳/meta 到 `data/run_xxx/` | 有实时预览窗口,ESC 停;深度存 16 位原值不压缩 |
+
+## 数据结构(record.py 产出)
+
+```
+data/run_<时间戳>/
+├── color/000000.png ...     彩色图,8 位 BGR
+├── depth/000000.npy ...     深度图,16 位原始值(毫米),保留物理信息
+├── preview/000000.jpg ...   彩色+深度伪彩色并排,人眼快速翻看用
+├── timestamps.csv           每帧时间戳 + 中心距离(米)
+└── meta.json                序列号、两路内参、深度单位、帧数
+```
+
+注意:
+- depth 里的 65535 = "没测到"(哨兵值),喂网络或算距离前先 mask 掉
+- 彩色和深度内参不同(两个物理相机),meta.json 分别记录;像素级对齐(`rs.align`)以后需要再加
+- 每帧同步写盘,实测约 24fps;要满 30fps 需加异步队列,需要时再升级
 
 ## 目录约定
 
