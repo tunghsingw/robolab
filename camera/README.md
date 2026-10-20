@@ -17,11 +17,38 @@ uv pip install -r requirements.txt
 
 ## 三步走
 
+**共同前提**(每条命令都一样,开新终端就先跑这两行):
+
+```powershell
+cd D:\robot\robolab\camera
+.\.venv\Scripts\Activate.ps1
+```
+
+提示符前面出现 `(.venv)` 才算激活。没有它,下面所有 `python xxx.py` 都会报
+`ModuleNotFoundError`——那不是相机的问题,是环境没切过来。
+
 | 步骤 | 命令 | 干什么 | 看到什么说明什么 |
 |---|---|---|---|
 | ① 验证 | `python probe.py` | 列设备、启双流、打印中心距离和内参 | 出现 D435 + 距离合理 = 全通;报找不到设备 = 查 USB 3.0 蓝色口/换线 |
 | ② 看画面 | `python view.py` | 实时窗口:左彩色、右深度,ESC 退出 | 手靠近镜头深度图变色 = 正常(需先 `uv pip install opencv-python`) |
-| ③ 采数据 | `python record.py [--seconds 10] [--name xx]` | 存彩色 PNG/深度 NPY/时间戳/meta 到 `data/run_xxx/` | 有实时预览窗口,ESC 停;深度存 16 位原值不压缩 |
+| ③ 采数据 | `python record.py --seconds 10 --name xx` | 存彩色 PNG/深度 NPY/时间戳/meta 到 `data/run_xxx/` | 有实时预览窗口,ESC 停;深度存 16 位原值不压缩 |
+
+③ 的 `--seconds` / `--name` 可省:不打就是手动停 + 时间戳默认名。
+
+## 常见报错对照表
+
+照抄命令直接运行报错时,拿报错原文和左列对照:
+
+| 报错 | 原因 | 怎么办 |
+|---|---|---|
+| `can't open file '...\probe.py'` | 目录不对,脚本都在 `camera\` 目录下 | `cd D:\robot\robolab\camera` 再跑 |
+| `ModuleNotFoundError: No module named 'pyrealsense2'` | 没激活 venv,python 用的是系统解释器 | `.\.venv\Scripts\Activate.ps1`,提示符出现 `(.venv)` 再跑 |
+| `ModuleNotFoundError: No module named 'cv2'` | 环境里没装 opencv(view/record/console 都要) | `uv pip install opencv-python`,或重跑 `uv pip install -r requirements.txt` |
+| `record.py: error: unrecognized arguments: [--seconds 10]` | 方括号是文档里表示“可选”的写法,照抄会被当成真参数 | 去掉方括号再跑:`--seconds 10 --name xx` |
+| `无法加载文件 ...Activate.ps1,因为在此系统上禁止运行脚本` | PowerShell 执行策略不让运行脚本 | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`(本机只需一次) |
+| `Device or resource busy` | 相机被别的进程占着(另一个 console.py 窗口,或 RealSense Viewer 没关) | 关掉占相机的程序再跑 |
+| `uv : 无法将"uv"识别为 cmdlet` | 装 uv 之前开的终端,PATH 没刷新 | 关掉终端重开;还不行 `pip install uv` |
+| console.py 窗口起不来、报 tkinter 相关错 | venv 建在了不带 tkinter 的 Python 3.13 上 | 按本文档指定系统 Python 3.12 重建 `.venv`(见环境搭建一节) |
 
 ## 控制台 console.py(三步合一)
 
