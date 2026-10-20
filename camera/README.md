@@ -23,6 +23,19 @@ uv pip install -r requirements.txt
 | ② 看画面 | `python view.py` | 实时窗口:左彩色、右深度,ESC 退出 | 手靠近镜头深度图变色 = 正常(需先 `uv pip install opencv-python`) |
 | ③ 采数据 | `python record.py [--seconds 10] [--name xx]` | 存彩色 PNG/深度 NPY/时间戳/meta 到 `data/run_xxx/` | 有实时预览窗口,ESC 停;深度存 16 位原值不压缩 |
 
+## 控制台 console.py(三步合一)
+
+三个脚本的功能合成一个窗口:`python console.py`。
+
+- 设备卡:连接状态、型号、序列号、内参摘要 + 重新验证
+- 画面区:左彩色、右深度实时显示,伪彩色可关;**录制中画面左上角变红色 `REC` + 读秒**(设了定时附总时长,如 `REC 6.3s/10s`)
+- 录制卡:run 名字、时长(0 = 手动停),开始/停止;按钮下方常驻**"已录 xx.x s"**,停止后保留最终时长
+- 状态栏:帧数、fps、中心距离、画面最近距离;录制时切换为 `REC 6.3s/10s | 录 189 帧 | ...`
+- 日志区:连接、开录、停录、错误全部落痕,出问题有据可查
+
+排障:`python console.py --selftest` 不开窗口自检(连接→取帧→录 2 秒→落盘),
+GUI 出问题时先跑它,分辨是相机/录制的错还是界面的错。
+
 ## 数据结构(record.py 产出)
 
 ```

@@ -62,6 +62,8 @@ class D435Console:
         self.frame_idx = 0
         self.record_frames = 0
         self.record_deadline = None    # 定时录制的截止时间(秒,None=手动)
+        self.record_start_t = None     # 录制开始时刻(读秒显示用)
+        self.record_seconds = 0        # 设定的总时长(0 = 手动停,读秒时附在 elapsed 后)
 
     # ---------- 设备 ----------
 
@@ -154,6 +156,8 @@ class D435Console:
         self.frame_idx = 0
         self.record_frames = 0
         self.record_deadline = time.time() + seconds if seconds > 0 else None
+        self.record_start_t = time.time()
+        self.record_seconds = seconds
         self.recording = True
         return self.run_dir
 
@@ -170,6 +174,12 @@ class D435Console:
         ])
         self.frame_idx += 1
         self.record_frames = self.frame_idx
+
+    def record_elapsed(self):
+        """已录制时长(秒);未录制返回 0.0。界面读秒显示用。"""
+        if not self.recording or self.record_start_t is None:
+            return 0.0
+        return time.time() - self.record_start_t
 
     def stop_recording(self):
         """停录制,写 meta.json,返回摘要 dict。"""
@@ -226,9 +236,13 @@ def selftest(seconds=2):
     print(f"== 3/3 录制 {seconds} 秒 ==")
     run_dir = console.start_recording(name="selftest", seconds=seconds)
     t0 = time.time()
+    k = 0
     while time.time() - t0 < seconds:
         depth_np, color_np, depth_frame, _ = console.grab()
         console.write_frame(depth_np, color_np, depth_frame)
+        if k % 12 == 1:      # 隔几帧打印一次,验证读秒在递增
+            print(f"   录制中… 已录 {console.record_elapsed():.1f} s")
+        k += 1
     summary = console.stop_recording()
     n_color = len(list((run_dir / "color").glob("*.png")))
     n_depth = len(list((run_dir / "depth").glob("*.npy")))
@@ -313,6 +327,11 @@ def run_gui():
             self.btn_stop = tk.Button(frm_rec, text="停止", font=FONT,
                                       command=self._on_stop_rec, state="disabled")
             self.btn_stop.pack(fill="x")
+            # 读秒:录制中实时走字,停止后保留最终时长("—" = 本次还没录过)
+            self.var_rec_time = tk.StringVar(value="已录 —")
+            tk.Label(frm_rec, textvariable=self.var_rec_time,
+                     font=("Microsoft YaHei UI", 13, "bold"),
+                     fg="#c0392b", bg="#ffffff").pack(fill="x", pady=(6, 0))
             tk.Button(frm_rec, text="打开数据目录", font=FONT_SMALL,
                       command=self._on_open_data).pack(fill="x", pady=(6, 0))
 
@@ -398,10 +417,12 @@ def run_gui():
             self._log(f"开始录制 → {run_dir}")
 
         def _on_stop_rec(self):
+            final_elapsed = self.console.record_elapsed()   # 先取,stop 后 record_elapsed 归 0
             summary = self.console.stop_recording()
             self.btn_start.configure(state="normal")
             self.btn_stop.configure(state="disabled")
             self.ent_name.configure(state="normal")
+            self.var_rec_time.set(f"已录 {final_elapsed:.1f} s")
             if summary:
                 self._log(f"停止,共 {summary['frames']} 帧 → {summary['run_dir']}")
 
@@ -456,19 +477,35 @@ def run_gui():
                     dep_show = cv2.cvtColor(
                         cv2.convertScaleAbs(depth_np, alpha=0.03), cv2.COLOR_GRAY2BGR)
                 min_txt = f"{mind:.2f}m" if mind is not None else "--"
-                hud = (f"#{self.frame_count}  {self.fps:.1f}fps  "
-                       f"ctr {center:.2f}m  min {min_txt}")
+                # 录制中:HUD 前缀换成红色 REC + 读秒(定时录附总时长),
+                # 录没录、录了多久,一眼可辨
+                if self.console.recording:
+                    elapsed = self.console.record_elapsed()
+                    total = self.console.record_seconds
+                    tag = f"REC {elapsed:.1f}s" + (f"/{total:.0f}s" if total > 0 else "")
+                    tag_color = (0, 0, 255)              # BGR 红
+                    self.var_rec_time.set(f"已录 {elapsed:.1f} s")
+                else:
+                    tag = f"#{self.frame_count}"
+                    tag_color = (255, 255, 255)          # BGR 白
+                hud = f"{tag}  {self.fps:.1f}fps  ctr {center:.2f}m  min {min_txt}"
                 disp = np.hstack((color_np, dep_show))
                 cv2.putText(disp, hud, (10, 28), cv2.FONT_HERSHEY_SIMPLEX,
-                            0.7, (255, 255, 255), 2)
+                            0.7, tag_color, 2)
                 img = Image.fromarray(cv2.cvtColor(disp, cv2.COLOR_BGR2RGB))
                 self._photo = ImageTk.PhotoImage(image=img)
                 self.lbl_video.configure(image=self._photo)
 
-                self.var_stats.set(
-                    f"帧 {self.frame_count} | {self.fps:.1f} fps | "
-                    f"中心 {center:.2f} m | 画面最近 {min_txt}"
-                )
+                if self.console.recording:
+                    self.var_stats.set(
+                        f"{tag} | 录 {self.console.record_frames} 帧 | "
+                        f"{self.fps:.1f} fps | 中心 {center:.2f} m | 最近 {min_txt}"
+                    )
+                else:
+                    self.var_stats.set(
+                        f"帧 {self.frame_count} | {self.fps:.1f} fps | "
+                        f"中心 {center:.2f} m | 画面最近 {min_txt}"
+                    )
             self.after(15, self._tick)
 
     app = App()
